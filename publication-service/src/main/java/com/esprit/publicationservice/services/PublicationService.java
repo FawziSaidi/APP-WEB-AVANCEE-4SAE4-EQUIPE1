@@ -1,8 +1,7 @@
 package com.esprit.publicationservice.services;
 
-import com.esprit.publicationservice.clients.UserClient;
 import com.esprit.publicationservice.dto.UserBlockDTO;
-import com.esprit.publicationservice.dto.UserDTO;
+import com.esprit.publicationservice.dto.UserEventDTO;
 import com.esprit.publicationservice.entities.Publication;
 import com.esprit.publicationservice.entities.StatutPublication;
 import com.esprit.publicationservice.entities.TypePublication;
@@ -16,24 +15,35 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * PublicationService modifié pour utiliser RabbitMQ au lieu de Feign.
+ *
+ * Changements par rapport à la version précédente :
+ *  - Suppression de UserClient (Feign)
+ *  - Injection de UserCacheService à la place
+ *  - enrichWithUser() lit depuis le cache local alimenté par RabbitMQ
+ *
+ * Résultat : aucun appel HTTP synchrone vers user-service lors du
+ * traitement des publications.
+ */
 @Service
 @RequiredArgsConstructor
 public class PublicationService {
 
     private final PublicationRepository publicationRepository;
-    private final UserClient userClient;
-    private static final String UPLOAD_DIR = "uploads/publications/";
-    private static final int SIGNALEMENT_THRESHOLD = 3;
-    private static final long BLOCK_THRESHOLD = 3;
+    private final UserCacheService      userCacheService;   // ← remplace UserClient
 
+    private static final String UPLOAD_DIR           = "uploads/publications/";
+    private static final int    SIGNALEMENT_THRESHOLD = 3;
+    private static final long   BLOCK_THRESHOLD       = 3;
 
+    // ── Lecture ──────────────────────────────────────────────────────
 
     public List<Publication> getAllPublications() {
         List<Publication> list = publicationRepository.findByStatutOrderByCreateAtDesc(StatutPublication.ACTIVE);
         list.forEach(this::enrichWithUser);
         return list;
     }
-
 
     public List<Publication> getAllPublicationsAdmin() {
         List<Publication> list = publicationRepository.findAllByOrderByCreateAtDesc();
@@ -53,20 +63,8 @@ public class PublicationService {
         return list;
     }
 
-
-
     public List<Publication> getArchivedByUserId(Integer userId) {
-        List<Publication> list = publicationRepository.findByUserIdAndStatutIn(
-                userId,
-                List.of(StatutPublication.ARCHIVED, StatutPublication.PENDING)
-        );
-        list.forEach(this::enrichWithUser);
-        return list;
-    }
-
-
-    public List<Publication> getPendingPublications() {
-        List<Publication> list = publicationRepository.findByStatut(StatutPublication.PENDING);
+        List<Publication> list = publicationRepository.findByUserIdAndStatut(userId, StatutPublication.ARCHIVED);
         list.forEach(this::enrichWithUser);
         return list;
     }
@@ -78,95 +76,88 @@ public class PublicationService {
         return p;
     }
 
+    // ── Blocage / Avertissement ──────────────────────────────────────
 
-
-    /**
-     * Un user est bloqué si la SOMME de ses warningCount >= 3.
-     * Ce total ne diminue jamais lors d'un déarchivage, seulement via reactiverCompteUser.
-     */
     public boolean isUserBlocked(Integer userId) {
-        long totalWarnings = publicationRepository.sumWarningCountByUserId(userId);
-        return totalWarnings >= BLOCK_THRESHOLD;
+        return publicationRepository.countArchivedByUserId(userId) >= BLOCK_THRESHOLD;
     }
 
-
-
-    /**
-     * Retourne le total de warnings du user (somme de warningCount sur toutes ses publications).
-     */
-    public long getWarningCount(Integer userId) {
-        return publicationRepository.sumWarningCountByUserId(userId);
+    public long getArchivedCount(Integer userId) {
+        return publicationRepository.countArchivedByUserId(userId);
     }
 
+    // ── Réactivation compte (admin) ──────────────────────────────────
 
-
-    /**
-     * L'admin réactive le compte :
-     * - Remet warningCount à 0 sur toutes les publications du user (reset total des warnings)
-     * - Remet les signalements à zéro sur toutes ses publications
-     * - NE change PAS le statut des publications (elles restent ARCHIVED/PENDING/ACTIVE telles quelles)
-     */
     public void reactiverCompteUser(Integer userId) {
-        // Reset warningCount et signalements sur TOUTES les publications du user
-        // sans toucher au statut
         List<Publication> allUserPubs = publicationRepository.findByUserId(userId);
-        for (Publication p : allUserPubs) {
-            p.setWarningCount(0);
-            p.getSignalements().clear();
+
+        List<Publication> archivedPubs = allUserPubs.stream()
+                .filter(p -> p.getStatut() == StatutPublication.ARCHIVED)
+                .collect(Collectors.toList());
+
+        for (Publication p : archivedPubs) {
+            p.getImages().forEach(this::deleteFile);
+            p.getPdfs().forEach(this::deleteFile);
+            publicationRepository.delete(p);
         }
-        publicationRepository.saveAll(allUserPubs);
+
+        List<Publication> activePubs = allUserPubs.stream()
+                .filter(p -> p.getStatut() == StatutPublication.ACTIVE)
+                .collect(Collectors.toList());
+
+        for (Publication p : activePubs) {
+            p.getSignalements().clear();
+            p.getSignalementRaisons().clear();
+        }
+        publicationRepository.saveAll(activePubs);
     }
 
-
+    // ── Liste des utilisateurs avec statut de blocage ────────────────
 
     public List<UserBlockDTO> getAllUsersBlockStatus() {
-        // Récupère tous les users ayant au moins un warning (warningCount > 0)
-        Map<Integer, Long> warningsByUser = publicationRepository
+        Map<Integer, Long> archivedCountByUser = publicationRepository
                 .findAllByOrderByCreateAtDesc()
                 .stream()
-                .filter(p -> p.getWarningCount() != null && p.getWarningCount() > 0)
-                .collect(Collectors.groupingBy(
-                        Publication::getUserId,
-                        Collectors.summingLong(p -> p.getWarningCount().longValue())
-                ));
+                .filter(p -> p.getStatut() == StatutPublication.ARCHIVED)
+                .collect(Collectors.groupingBy(Publication::getUserId, Collectors.counting()));
 
         List<UserBlockDTO> result = new ArrayList<>();
-        for (Map.Entry<Integer, Long> entry : warningsByUser.entrySet()) {
-            Integer uid  = entry.getKey();
-            long warnings = entry.getValue();
-            String name = "", lastName = "";
-            try {
-                UserDTO u = userClient.getUserById(uid);
-                name     = u.getName()     != null ? u.getName()     : "";
-                lastName = u.getLastName() != null ? u.getLastName() : "";
-            } catch (Exception ignored) {}
-            result.add(new UserBlockDTO(uid, name, lastName, warnings));
+        for (Map.Entry<Integer, Long> entry : archivedCountByUser.entrySet()) {
+            Integer uid   = entry.getKey();
+            long    count = entry.getValue();
+            String  name  = "", lastName = "";
+
+            // Lecture depuis le cache RabbitMQ (remplace userClient.getUserById)
+            Optional<UserEventDTO> cached = userCacheService.get(uid);
+            if (cached.isPresent()) {
+                name     = cached.get().getName()     != null ? cached.get().getName()     : "";
+                lastName = cached.get().getLastName() != null ? cached.get().getLastName() : "";
+            }
+
+            result.add(new UserBlockDTO(uid, name, lastName, count));
         }
 
         result.sort(Comparator.comparingLong(UserBlockDTO::getArchivedCount).reversed());
         return result;
     }
 
+    // ── Signalement ──────────────────────────────────────────────────
 
-
-    public Publication signalerPublication(Integer id, Integer userId) {
+    public Publication signalerPublication(Integer id, Integer userId, String raison) {
         Publication p = publicationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Publication not found: " + id));
 
-        if (p.getStatut() != StatutPublication.ACTIVE) {
+        if (p.getStatut() != StatutPublication.ACTIVE)
             throw new IllegalStateException("Cette publication n'est pas active.");
-        }
-        if (p.getSignalements().contains(userId)) {
+        if (p.getSignalements().contains(userId))
             throw new IllegalStateException("Vous avez déjà signalé cette publication.");
-        }
 
         p.getSignalements().add(userId);
+        p.getSignalementRaisons().add(raison != null ? raison : "");
 
         if (p.getSignalements().size() >= SIGNALEMENT_THRESHOLD) {
             p.setStatut(StatutPublication.ARCHIVED);
             p.setArchivedAt(java.time.LocalDateTime.now());
-            // Incrémente le warning de 1 — ne décrémentera jamais lors d'un déarchivage
-            p.setWarningCount(p.getWarningCount() + 1);
         }
 
         Publication saved = publicationRepository.save(p);
@@ -174,75 +165,24 @@ public class PublicationService {
         return saved;
     }
 
-
-
-    public Publication demanderReactivation(Integer id, Integer userId) {
-        Publication p = publicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Publication not found: " + id));
-
-        if (!p.getUserId().equals(userId)) {
-            throw new RuntimeException("Non autorisé.");
-        }
-        if (p.getStatut() != StatutPublication.ARCHIVED) {
-            throw new IllegalStateException("La publication n'est pas archivée.");
-        }
-
-        // On passe en PENDING mais on NE touche PAS au warningCount
-        p.setStatut(StatutPublication.PENDING);
-        Publication saved = publicationRepository.save(p);
-        enrichWithUser(saved);
-        return saved;
-    }
-
-
-
-    /** Admin accepte la réactivation → ACTIVE + reset des signalements (warningCount reste intact) */
-    public Publication accepterReactivation(Integer id) {
-        Publication p = publicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Publication not found: " + id));
-
-        if (p.getStatut() != StatutPublication.PENDING) {
-            throw new IllegalStateException("La publication n'est pas en attente.");
-        }
-
-        p.setStatut(StatutPublication.ACTIVE);
-        p.getSignalements().clear();
-        // warningCount reste intact — seul reactiverCompteUser remet à 0
-        Publication saved = publicationRepository.save(p);
-        enrichWithUser(saved);
-        return saved;
-    }
-
-    /** Admin refuse la réactivation → reste ARCHIVED (warningCount intact) */
-    public Publication refuserReactivation(Integer id) {
-        Publication p = publicationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Publication not found: " + id));
-
-        if (p.getStatut() != StatutPublication.PENDING) {
-            throw new IllegalStateException("La publication n'est pas en attente.");
-        }
-
-        p.setStatut(StatutPublication.ARCHIVED);
-        p.setArchivedAt(java.time.LocalDateTime.now());
-        Publication saved = publicationRepository.save(p);
-        enrichWithUser(saved);
-        return saved;
-    }
-
-
+    // ── CRUD ─────────────────────────────────────────────────────────
 
     public Publication createPublication(String titre, String contenue, TypePublication type,
                                          Integer userId, List<MultipartFile> images,
                                          List<MultipartFile> pdfs, String titleColor,
                                          String contentColor, String titleFontSize) throws IOException {
-        if (titre == null || titre.trim().isEmpty()) throw new IllegalArgumentException("Title is required");
+        if (titre    == null || titre.trim().isEmpty())    throw new IllegalArgumentException("Title is required");
         if (contenue == null || contenue.trim().isEmpty()) throw new IllegalArgumentException("Content is required");
-        try { userClient.getUserById(userId); } catch (Exception e) { throw new RuntimeException("User not found: " + userId); }
 
-        // Blocage basé sur le total de warningCount (ne décrémente jamais)
-        if (isUserBlocked(userId)) {
-            throw new IllegalStateException("BLOCKED: Votre compte est bloqué suite à 3 posts signalés. Contactez l'administrateur.");
+        // Vérification du user dans le cache (plus de Feign)
+        // Le token Keycloak garantit l'identité ; le cache peut ne pas encore contenir le user
+        // si publication-service a démarré avant user-service → on ne bloque pas
+        if (userCacheService.get(userId).isEmpty()) {
+            System.err.println("[WARN] userId=" + userId + " absent du cache RabbitMQ. Token Keycloak accepté.");
         }
+
+        if (isUserBlocked(userId))
+            throw new IllegalStateException("BLOCKED: Votre compte est bloqué suite à 3 posts signalés. Contactez l'administrateur.");
 
         if (type == TypePublication.QUESTION) {
             boolean hasImages = images != null && images.stream().anyMatch(f -> !f.isEmpty());
@@ -253,13 +193,20 @@ public class PublicationService {
         Publication p = new Publication();
         p.setTitre(titre); p.setContenue(contenue); p.setType(type); p.setUserId(userId);
         p.setStatut(StatutPublication.ACTIVE);
-        p.setWarningCount(0);
         if (titleColor    != null) p.setTitleColor(titleColor);
         if (contentColor  != null) p.setContentColor(contentColor);
         if (titleFontSize != null) p.setTitleFontSize(titleFontSize);
 
-        if (images != null) { List<String> names = new ArrayList<>(); for (MultipartFile f : images) if (!f.isEmpty()) names.add(saveFile(f, false)); p.setImages(names); }
-        if (pdfs   != null) { List<String> names = new ArrayList<>(); for (MultipartFile f : pdfs)   if (!f.isEmpty()) names.add(saveFile(f, true));  p.setPdfs(names);   }
+        if (images != null) {
+            List<String> names = new ArrayList<>();
+            for (MultipartFile f : images) if (!f.isEmpty()) names.add(saveFile(f, false));
+            p.setImages(names);
+        }
+        if (pdfs != null) {
+            List<String> names = new ArrayList<>();
+            for (MultipartFile f : pdfs) if (!f.isEmpty()) names.add(saveFile(f, true));
+            p.setPdfs(names);
+        }
 
         Publication saved = publicationRepository.save(p);
         enrichWithUser(saved);
@@ -270,14 +217,15 @@ public class PublicationService {
                                          Integer userId, List<MultipartFile> newImages, List<String> imagesToKeep,
                                          List<MultipartFile> newPdfs, List<String> pdfsToKeep,
                                          String titleColor, String contentColor, String titleFontSize) throws IOException {
-        Publication p = publicationRepository.findById(id).orElseThrow(() -> new RuntimeException("Publication not found"));
+        Publication p = publicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Publication not found"));
         if (!p.getUserId().equals(userId)) throw new RuntimeException("Not authorized");
         if (titre    != null && !titre.trim().isEmpty())    p.setTitre(titre);
         if (contenue != null && !contenue.trim().isEmpty()) p.setContenue(contenue);
-        if (type        != null) p.setType(type);
-        if (titleColor  != null) p.setTitleColor(titleColor);
-        if (contentColor!= null) p.setContentColor(contentColor);
-        if (titleFontSize!= null) p.setTitleFontSize(titleFontSize);
+        if (type          != null) p.setType(type);
+        if (titleColor    != null) p.setTitleColor(titleColor);
+        if (contentColor  != null) p.setContentColor(contentColor);
+        if (titleFontSize != null) p.setTitleFontSize(titleFontSize);
 
         List<String> currentImages = new ArrayList<>(p.getImages());
         for (String img : currentImages) if (imagesToKeep == null || !imagesToKeep.contains(img)) deleteFile(img);
@@ -299,21 +247,30 @@ public class PublicationService {
     }
 
     public void deletePublication(Integer id, Integer userId) {
-        Publication p = publicationRepository.findById(id).orElseThrow(() -> new RuntimeException("Publication not found"));
+        Publication p = publicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Publication not found"));
         if (!p.getUserId().equals(userId)) throw new RuntimeException("Not authorized");
-        p.getImages().forEach(this::deleteFile); p.getPdfs().forEach(this::deleteFile);
+        p.getImages().forEach(this::deleteFile);
+        p.getPdfs().forEach(this::deleteFile);
         publicationRepository.delete(p);
     }
 
     public void adminDeletePublication(Integer id) {
-        Publication p = publicationRepository.findById(id).orElseThrow(() -> new RuntimeException("Publication not found"));
-        p.getImages().forEach(this::deleteFile); p.getPdfs().forEach(this::deleteFile);
+        Publication p = publicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Publication not found"));
+        p.getImages().forEach(this::deleteFile);
+        p.getPdfs().forEach(this::deleteFile);
         publicationRepository.delete(p);
     }
 
+    // ── Helpers ──────────────────────────────────────────────────────
 
+    /**
+     * Enrichit une publication avec les données de l'auteur depuis le cache RabbitMQ.
+     * Remplace l'ancien appel : userClient.getUserById(p.getUserId())
+     */
     private void enrichWithUser(Publication p) {
-        try { p.setUser(userClient.getUserById(p.getUserId())); } catch (Exception ignored) {}
+        userCacheService.get(p.getUserId()).ifPresent(p::setUser);
     }
 
     private String saveFile(MultipartFile file, boolean isPdf) throws IOException {
@@ -328,6 +285,7 @@ public class PublicationService {
     }
 
     private void deleteFile(String name) {
-        try { Files.deleteIfExists(Paths.get(UPLOAD_DIR + name)); } catch (IOException e) { System.err.println("Delete error: " + e.getMessage()); }
+        try { Files.deleteIfExists(Paths.get(UPLOAD_DIR + name)); }
+        catch (IOException e) { System.err.println("Delete error: " + e.getMessage()); }
     }
 }
