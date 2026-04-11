@@ -23,25 +23,26 @@ import { RegisterComponent } from './register/register.component';
   ]
 })
 export class AuthModule {}
+
 export interface RegisterRequest {
   name: string;
   lastName: string;
   email: string;
   password: string;
-  role: string;       // e.g., "ADMIN" or "USER"
-  birthDate?: string; // optional, format "YYYY-MM-DD"
+  role: string;
+  birthDate?: string;
 }
-
 
 export interface AuthRequest {
   email: string;
   password: string;
 }
 
+// ✅ FIX : ajout de refreshToken et expiresIn retournés par le backend Keycloak
 export interface AuthResponse {
   token: string;
   role: 'ADMIN' | 'USER' | 'CLIENT' | 'FREELANCER';
-  id: number;  // ✅ ID de l'utilisateur retourné par le backend
+  userId: number;
+  refreshToken: string;   // ← token de rafraîchissement Keycloak
+  expiresIn: number;      // ← durée de validité en secondes (ex: 300)
 }
-
-

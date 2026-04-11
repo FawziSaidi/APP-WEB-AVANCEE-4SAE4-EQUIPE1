@@ -6,8 +6,7 @@ export enum TypePublication {
 
 export enum StatutPublication {
   ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-  PENDING = 'PENDING'
+  ARCHIVED = 'ARCHIVED'
 }
 
 export interface User {
@@ -25,13 +24,15 @@ export interface Publication {
   pdfs?: string[];
   createAt?: string;
   type: TypePublication;
+  userId?: number;       // ✅ FIX : champ direct depuis le backend (fallback si user est null)
   user?: User;
   commentaires?: any[];
   titleColor?: string;
   contentColor?: string;
   titleFontSize?: string;
   statut?: StatutPublication;
-  signalements?: number[]; // liste des userId qui ont signalé
+  signalements?: number[];
+  signalementRaisons?: string[];
 }
 
 export function getImageUrl(imageName: string): string {

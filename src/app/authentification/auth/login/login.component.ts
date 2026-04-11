@@ -13,12 +13,16 @@ export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;
   isLoading = false;
   showPassword = false;
+  errorMessage = '';
   currentYear = new Date().getFullYear();
 
-  // Session-aware user property
   user: { email: string; role: string } | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router, private authService: AuthService) {
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -29,11 +33,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     document.body.classList.add('auth-page');
 
-    // Load existing session if present
-    const email = localStorage.getItem('userName');
-    const role = localStorage.getItem('role');
-    if (email && role) {
-      this.user = { email, role };
+    // Si déjà connecté, rediriger directement
+    if (this.authService.isLoggedIn()) {
+      const role = this.authService.getRole();
+      this.router.navigate(role === 'ADMIN' ? ['/admin/dashboard'] : ['/app']);
     }
   }
 
@@ -46,10 +49,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    // Clear session
-    localStorage.removeItem('token');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('role');
+    this.authService.logout();
     this.user = null;
   }
 
@@ -60,6 +60,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
 
     this.isLoading = true;
+    this.errorMessage = '';
 
     const authRequest: AuthRequest = {
       email: this.loginForm.value.email,
@@ -70,28 +71,33 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: (res: AuthResponse) => {
         this.isLoading = false;
 
-        // Save session data
+        // ✅ KEYCLOAK : on sauvegarde le token Keycloak via setSession
+        // L'intercepteur HTTP l'enverra automatiquement dans chaque requête
+        this.authService.setSession(res, authRequest.email);
+
+        // Compatibilité avec ancien code qui lit directement localStorage
         localStorage.setItem('token', res.token);
         localStorage.setItem('userName', authRequest.email);
         localStorage.setItem('role', res.role);
-        localStorage.setItem('userId', res.id.toString()); // ✅ Sauvegarder l'ID utilisateur
-
-        // ✅ Mettre à jour le BehaviorSubject via setSession
-        this.authService.setSession(res, authRequest.email);
+        localStorage.setItem('userId', res.userId.toString()); // ✅ était res.id
 
         this.user = { email: authRequest.email, role: res.role };
 
-        // Conditional navigation based on role
         if (res.role === 'ADMIN') {
-          this.router.navigate(['/admin/dashboard']); // Admin landing page
+          this.router.navigate(['/admin/dashboard']);
         } else {
-          this.router.navigate(['/app']); // Normal user dashboard
+          this.router.navigate(['/app']);
         }
       },
       error: (err) => {
         this.isLoading = false;
+        // Afficher le message d'erreur du backend si disponible
+        if (typeof err.error === 'string') {
+          this.errorMessage = err.error;
+        } else {
+          this.errorMessage = 'Login failed. Please check your credentials.';
+        }
         console.error('Login error', err);
-        alert('Login failed! Please check your credentials.');
       }
     });
   }

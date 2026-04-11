@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { RouterModule } from '@angular/router';           // ✅ FIX : requis pour router.navigate() dans SidebarComponent
 import { BackofficeRoutingModule } from './backoffice-routing.module';
 
 import { HeaderComponent } from './components/header/header.component';
@@ -24,6 +25,7 @@ import { GestionForumComponent } from './GestionForum/gestion-forum.component';
     CommonModule,
     FormsModule,
     HttpClientModule,
+    RouterModule,                // ✅ FIX : ajouté
     BackofficeRoutingModule
   ]
 })

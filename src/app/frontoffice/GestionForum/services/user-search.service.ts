@@ -14,6 +14,10 @@ export interface UserSuggestion {
 export class UserSearchService {
   private baseUrl = 'http://localhost:8222/users/search';
 
+  // Endpoint public (sans token) utilisé pour charger tous les users
+  // Remplace /users/all qui était réservé à l'ADMIN → 403 pour les users normaux
+  private allCacheUrl = 'http://localhost:8222/users/all-for-cache';
+
   constructor(private http: HttpClient) {}
 
   searchUsers(query: string): Observable<UserSuggestion[]> {
@@ -25,6 +29,10 @@ export class UserSearchService {
   }
 
   getAllUsers(): Observable<UserSuggestion[]> {
-    return this.http.get<UserSuggestion[]>('http://localhost:8222/users/all');
+    // Ancien endpoint (ADMIN only → 403 pour les users normaux) :
+    // return this.http.get<UserSuggestion[]>('http://localhost:8222/users/all');
+
+    // Nouvel endpoint public accessible à tous :
+    return this.http.get<UserSuggestion[]>(this.allCacheUrl);
   }
 }

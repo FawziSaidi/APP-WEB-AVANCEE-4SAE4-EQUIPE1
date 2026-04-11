@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.services';
 import { RegisterRequest } from '../auth.module';
 
-
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
@@ -14,23 +13,24 @@ export class RegisterComponent implements OnInit, OnDestroy {
   registerForm: FormGroup;
   isLoading = false;
   showPassword = false;
+  errorMessage = '';
   currentYear = new Date().getFullYear();
   userType: 'freelancer' | 'recruiter' = 'freelancer';
 
-constructor(
-  private fb: FormBuilder,
-  private router: Router,
-  private authService: AuthService  // <-- add this
-) {
-  this.registerForm = this.fb.group({
-    fullName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],  // <-- new
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
-    birthDate: ['', Validators.required],
-    agreeTerms: [false, [Validators.requiredTrue]]
-  });
-}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private authService: AuthService
+  ) {
+    this.registerForm = this.fb.group({
+      fullName:   ['', [Validators.required, Validators.minLength(2)]],
+      lastName:   ['', [Validators.required, Validators.minLength(2)]],
+      email:      ['', [Validators.required, Validators.email]],
+      password:   ['', [Validators.required, Validators.minLength(8)]],
+      birthDate:  ['', Validators.required],
+      agreeTerms: [false, [Validators.requiredTrue]]
+    });
+  }
 
   ngOnInit(): void {
     document.body.classList.add('auth-page');
@@ -48,38 +48,44 @@ constructor(
     this.showPassword = !this.showPassword;
   }
 
-onSubmit(): void {
-  if (this.registerForm.invalid) {
-    this.registerForm.markAllAsTouched();
-    return;
-  }
-
-  this.isLoading = true;
-
-  const request: RegisterRequest = {
-    name: this.registerForm.value.fullName,   // map fullName to name
-    lastName: '',                              // optionally split fullName or add field
-    email: this.registerForm.value.email,
-    password: this.registerForm.value.password,
-    role: this.userType === 'freelancer' ? 'USER' : 'CLIENT',
-    birthDate: '' // optional, you can add birthDate field if you have one
-  };
-
-  this.authService.register(request).subscribe({
-    next: (res) => {
-      this.isLoading = false;
-      console.log('Registration success:', res);
-      localStorage.setItem('token', res.token);
-      localStorage.setItem('userName', request.email);
-      this.router.navigate(['/app/dashboard']); // redirect after success
-    },
-    error: (err) => {
-      this.isLoading = false;
-      console.error('Registration failed', err);
-      alert('Registration failed!'); // optionally show in form
+  onSubmit(): void {
+    if (this.registerForm.invalid) {
+      this.registerForm.markAllAsTouched();
+      return;
     }
-  });
-}
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    const request: RegisterRequest = {
+      name:      this.registerForm.value.fullName,
+      lastName:  this.registerForm.value.lastName,
+      email:     this.registerForm.value.email,
+      password:  this.registerForm.value.password,
+      role:      this.userType === 'freelancer' ? 'FREELANCER' : 'CLIENT',
+      birthDate: this.registerForm.value.birthDate
+    };
+
+    this.authService.register(request).subscribe({
+      next: () => {
+        // ✅ KEYCLOAK : register retourne juste un message texte (pas de token)
+        // On redirige vers le login pour que l'utilisateur s'authentifie
+        this.isLoading = false;
+        this.router.navigate(['/login'], {
+          queryParams: { registered: 'true' }
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        if (typeof err.error === 'string') {
+          this.errorMessage = err.error;
+        } else {
+          this.errorMessage = 'Registration failed. Please try again.';
+        }
+        console.error('Registration failed', err);
+      }
+    });
+  }
 
   socialRegister(provider: string): void {
     this.isLoading = true;

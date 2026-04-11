@@ -7,14 +7,16 @@ export interface Publication {
   titre: string;
   contenue: string;
   type: 'QUESTION' | 'ARTICLE' | 'REVIEW';
-  statut: 'ACTIVE' | 'ARCHIVED' | 'PENDING';
+  statut: 'ACTIVE' | 'ARCHIVED'; // PENDING supprimé
   createAt: string;
   archivedAt?: string;
   images: string[];
   pdfs: string[];
   signalements?: number[];
+  signalementRaisons?: string[]; // raisons des signalements
   warningCount?: number;
-  user: { id: number; name: string; lastName: string; email: string; };
+  userId?: number;               // ✅ FIX: champ direct si user est null
+  user: { id: number; name: string; lastName: string; email: string; } | null;
   commentaires: Commentaire[];
   commentCount?: number;
 }
@@ -44,32 +46,36 @@ export interface UserBlockDTO {
   userId: number;
   name: string;
   lastName: string;
-  warningCount: number;    // ✅ correspond au champ retourné par le backend
+  warningCount: number; // correspond au nombre de posts archivés
   blocked: boolean;
+}
+
+/** DTO retourné par /users/all-for-cache */
+export interface UserCacheDTO {
+  id: number;
+  name: string;
+  lastName: string;
+  email?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ForumService {
-  private readonly apiBase = 'http://localhost:8222/api';
+  private readonly apiBase    = 'http://localhost:8222/api';
+  private readonly gatewayBase = 'http://localhost:8222';  // ✅ FIX: gateway au lieu de 8081 direct
 
   constructor(private http: HttpClient) {}
 
-  // ── Publications ──────────────────────────────────────────────
+  // ── Users cache ───────────────────────────────────────────────────
+
+  /** Charge tous les utilisateurs depuis user-service (même endpoint que commentaire-service) */
+  getUsersForCache(): Observable<UserCacheDTO[]> {
+    return this.http.get<UserCacheDTO[]>(`${this.gatewayBase}/users/all-for-cache`);  // ✅ via gateway
+  }
+
+  // ── Publications ──────────────────────────────────────────────────
 
   getAllPublications(): Observable<Publication[]> {
     return this.http.get<Publication[]>(`${this.apiBase}/publications/admin/all`);
-  }
-
-  getPendingPublications(): Observable<Publication[]> {
-    return this.http.get<Publication[]>(`${this.apiBase}/publications/admin/pending`);
-  }
-
-  accepterReactivation(id: number): Observable<Publication> {
-    return this.http.post<Publication>(`${this.apiBase}/publications/admin/${id}/accepter`, null);
-  }
-
-  refuserReactivation(id: number): Observable<Publication> {
-    return this.http.post<Publication>(`${this.apiBase}/publications/admin/${id}/refuser`, null);
   }
 
   adminDeletePublication(id: number): Observable<any> {
@@ -80,17 +86,32 @@ export class ForumService {
     return this.http.delete(`${this.apiBase}/publications/${id}?userId=${userId}`, { responseType: 'text' });
   }
 
-  // ── Blocage utilisateurs ──────────────────────────────────────
+  // ── Signalement ───────────────────────────────────────────────────
+
+  /**
+   * Signale une publication avec une raison.
+   */
+  signalerPublication(id: number, userId: number, raison: string): Observable<Publication> {
+    const params = new HttpParams()
+      .set('userId', userId.toString())
+      .set('raison', raison);
+    return this.http.post<Publication>(`${this.apiBase}/publications/${id}/signaler`, null, { params });
+  }
+
+  // ── Blocage utilisateurs ──────────────────────────────────────────
 
   getBlockedUsers(): Observable<UserBlockDTO[]> {
     return this.http.get<UserBlockDTO[]>(`${this.apiBase}/publications/admin/blocked-users`);
   }
 
+  /**
+   * Réactive le compte : supprime les posts archivés + reset signalements.
+   */
   reactiverCompteUser(userId: number): Observable<any> {
     return this.http.post(`${this.apiBase}/publications/admin/users/${userId}/reactiver-compte`, null);
   }
 
-  // ── Commentaires ──────────────────────────────────────────────
+  // ── Commentaires ──────────────────────────────────────────────────
 
   getAllCommentaires(): Observable<Commentaire[]> {
     return this.http.get<Commentaire[]>(`${this.apiBase}/commentaires`);
@@ -118,7 +139,7 @@ export class ForumService {
     return this.http.delete(`${this.apiBase}/commentaires/${id}?userId=${userId}`, { responseType: 'text' });
   }
 
-  // ── Réactions ─────────────────────────────────────────────────
+  // ── Réactions ─────────────────────────────────────────────────────
 
   getReactionSummary(publicationId: number): Observable<ReactionSummary> {
     const params = new HttpParams().set('userId', '0');
