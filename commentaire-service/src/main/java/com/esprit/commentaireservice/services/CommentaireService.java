@@ -1,50 +1,86 @@
 package com.esprit.commentaireservice.services;
+
 import com.esprit.commentaireservice.clients.PublicationClient;
-import com.esprit.commentaireservice.clients.UserClient;
 import com.esprit.commentaireservice.dto.PublicationDTO;
-import com.esprit.commentaireservice.dto.UserDTO;
+import com.esprit.commentaireservice.dto.UserEventDTO;
 import com.esprit.commentaireservice.entities.Commentaire;
 import com.esprit.commentaireservice.repositories.CommentaireRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
-@Service @RequiredArgsConstructor
+/**
+ * CommentaireService modifié pour utiliser RabbitMQ au lieu de Feign
+ * pour la relation avec user-service.
+ *
+ * Changements :
+ *  - Suppression de UserClient (Feign) → remplacé par UserCacheService
+ *  - PublicationClient (Feign) → gardé tel quel
+ *  - enrichWithUser() lit depuis le cache local alimenté par RabbitMQ
+ */
+@Service
+@RequiredArgsConstructor
 public class CommentaireService {
+
     private final CommentaireRepository commentaireRepository;
-    private final UserClient userClient;
-    private final PublicationClient publicationClient;
+    private final PublicationClient     publicationClient;   // ← Feign gardé
+    private final UserCacheService      userCacheService;    // ← remplace UserClient
 
     public List<Commentaire> getAllCommentaires() {
         List<Commentaire> list = commentaireRepository.findAllByOrderByCreateAtDesc();
-        list.forEach(this::enrichWithUser); return list;
+        list.forEach(this::enrichWithUser);
+        return list;
     }
 
     public List<Commentaire> getByPublicationId(Integer publicationId) {
         List<Commentaire> list = commentaireRepository.findRootByPublicationIdOrderByPinned(publicationId);
-        list.forEach(this::enrichWithUser); return list;
+        list.forEach(this::enrichWithUser);
+        return list;
     }
 
     public Commentaire getById(Integer id) {
-        return commentaireRepository.findById(id).orElseThrow(() -> new RuntimeException("Commentaire not found: " + id));
+        return commentaireRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Commentaire not found: " + id));
     }
 
     public Commentaire create(String contenue, Integer publicationId, Integer userId) {
-        if (contenue == null || contenue.trim().isEmpty()) throw new IllegalArgumentException("Content required");
-        try { publicationClient.getPublicationById(publicationId); } catch (Exception e) { throw new RuntimeException("Publication not found: " + publicationId); }
+        if (contenue == null || contenue.trim().isEmpty())
+            throw new IllegalArgumentException("Content required");
+
+        // PublicationClient Feign gardé pour valider l'existence de la publication
+        try {
+            publicationClient.getPublicationById(publicationId);
+        } catch (Exception e) {
+            throw new RuntimeException("Publication not found: " + publicationId);
+        }
+
         Commentaire c = new Commentaire();
-        c.setContenue(contenue); c.setUserId(userId); c.setPublicationId(publicationId);
+        c.setContenue(contenue);
+        c.setUserId(userId);
+        c.setPublicationId(publicationId);
+
         Commentaire saved = commentaireRepository.save(c);
-        enrichWithUser(saved); return saved;
+        enrichWithUser(saved);
+        return saved;
     }
 
-    public Commentaire reply(String contenue, Integer parentId, Integer publicationId, Integer userId) {
-        if (contenue == null || contenue.trim().isEmpty()) throw new IllegalArgumentException("Content required");
+    public Commentaire reply(String contenue, Integer parentId,
+                             Integer publicationId, Integer userId) {
+        if (contenue == null || contenue.trim().isEmpty())
+            throw new IllegalArgumentException("Content required");
+
         Commentaire parent = getById(parentId);
+
         Commentaire c = new Commentaire();
-        c.setContenue(contenue); c.setUserId(userId); c.setPublicationId(publicationId); c.setParent(parent);
+        c.setContenue(contenue);
+        c.setUserId(userId);
+        c.setPublicationId(publicationId);
+        c.setParent(parent);
+
         Commentaire saved = commentaireRepository.save(c);
-        enrichWithUser(saved); return saved;
+        enrichWithUser(saved);
+        return saved;
     }
 
     public Commentaire update(Integer id, String contenue, Integer userId) {
@@ -62,21 +98,35 @@ public class CommentaireService {
 
     public Commentaire togglePin(Integer id, Integer userId) {
         Commentaire c = getById(id);
+        // PublicationClient Feign gardé pour vérifier le propriétaire de la publication
         try {
             PublicationDTO pub = publicationClient.getPublicationById(c.getPublicationId());
-            if (!pub.getUserId().equals(userId)) throw new RuntimeException("Only publication owner can pin");
-        } catch (RuntimeException e) { throw e; } catch (Exception e) { throw new RuntimeException("Error checking publication"); }
+            if (!pub.getUserId().equals(userId))
+                throw new RuntimeException("Only publication owner can pin");
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error checking publication");
+        }
         c.setPinned(!c.isPinned());
         return commentaireRepository.save(c);
     }
 
-    private void enrichWithUser(Commentaire c) {
-        try { c.setUser(userClient.getUserById(c.getUserId())); } catch (Exception ignored) {}
+    // ── Helper ────────────────────────────────────────────────────────────────
 
+    /**
+     * Enrichit un commentaire et ses réponses avec les données de l'auteur
+     * depuis le cache RabbitMQ (remplace userClient.getUserById()).
+     */
+    private void enrichWithUser(Commentaire c) {
+        // Enrichir le commentaire principal
+        userCacheService.get(c.getUserId()).ifPresent(c::setUser);
+
+        // Enrichir les réponses (replies)
         if (c.getReplies() != null && !c.getReplies().isEmpty()) {
-            c.getReplies().forEach(reply -> {
-                try { reply.setUser(userClient.getUserById(reply.getUserId())); } catch (Exception ignored) {}
-            });
+            c.getReplies().forEach(reply ->
+                    userCacheService.get(reply.getUserId()).ifPresent(reply::setUser)
+            );
         }
     }
 }
