@@ -1,0 +1,25 @@
+<aside class="sidebar">
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <div class="logo">
+      <img src="assets/img/prolance.png" alt="Prolance Logo" width="40" height="40" />
+      <span class="logo-text">PROLANCE</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="menu">
+    <a
+      *ngFor="let item of menuItems"
+      href="#"
+      class="menu-item"
+      [class.active]="activeMenu === item.id"
+      [class.logout-item]="item.isLogout"
+      (click)="onMenuClick($event, item)">
+      <span class="menu-icon">{{ item.icon }}</span>
+      <span class="menu-label">{{ item.label }}</span>
+    </a>
+  </nav>
+
+</aside>

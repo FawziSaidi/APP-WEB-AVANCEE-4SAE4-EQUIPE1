@@ -1,0 +1,48 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { LoginComponent } from './login/login.component';
+import { RegisterComponent } from './register/register.component';
+
+@NgModule({
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
+  declarations: [
+    LoginComponent,
+    RegisterComponent
+  ],
+  exports: [
+    LoginComponent,
+    RegisterComponent
+  ]
+})
+export class AuthModule {}
+
+export interface RegisterRequest {
+  name: string;
+  lastName: string;
+  email: string;
+  password: string;
+  role: string;
+  birthDate?: string;
+}
+
+export interface AuthRequest {
+  email: string;
+  password: string;
+}
+
+// ✅ FIX : ajout de refreshToken et expiresIn retournés par le backend Keycloak
+export interface AuthResponse {
+  token: string;
+  role: 'ADMIN' | 'USER' | 'CLIENT' | 'FREELANCER';
+  userId: number;
+  refreshToken: string;   // ← token de rafraîchissement Keycloak
+  expiresIn: number;      // ← durée de validité en secondes (ex: 300)
+}

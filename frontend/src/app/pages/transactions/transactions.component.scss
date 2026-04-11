@@ -1,0 +1,4 @@
+.badge-success { background-color: #4caf50; color: #fff; padding: 4px 10px; border-radius: 4px; }
+.badge-warning { background-color: #ff9800; color: #fff; padding: 4px 10px; border-radius: 4px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
