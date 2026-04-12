@@ -118,6 +118,9 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: http://keycloak:8080/realms/ProlanceRealm
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/ProlanceRealm/protocol/openid-connect/certs
       KEYCLOAK_SERVERURL: http://keycloak:8080
+      KEYCLOAK_REALM: ProlanceRealm
+      KEYCLOAK_CLIENT_ID: prolance-client
+      KEYCLOAK_CLIENT_SECRET: S5EJYOv8Kw3056NGcgJHkYswiyGG2S2r
     depends_on:
       mysql:
         condition: service_healthy
@@ -290,6 +293,58 @@ services:
       eureka-server:
         condition: service_healthy
       keycloak:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # ========================= PROMO SERVICE =========================
+
+  promo-service:
+    build:
+      context: ./backend/promo-service
+      dockerfile: Dockerfile
+    container_name: promo-service
+    ports:
+      - "8091:8091"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/web_promo_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # ========================= SUBSCRIPTION SERVICE =========================
+
+  subscription-service:
+    build:
+      context: ./backend/subscription-service
+      dockerfile: Dockerfile
+    container_name: subscription-service
+    ports:
+      - "8092:8092"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/web_subscription_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - microservices-net

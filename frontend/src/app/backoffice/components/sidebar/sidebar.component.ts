@@ -10,41 +10,62 @@ import { AuthService } from '../../../services/auth.services';
 export class SidebarComponent implements OnInit {
 
   activeMenu: string = 'dashboard';
+  userName: string = '';
+  userRole: string = '';
 
   menuItems = [
-    { id: 'dashboard',   icon: '📊', label: 'DASHBOARD',   link: '/admin/dashboard', isLogout: false },
-    { id: 'profile',     icon: '👤', label: 'PROFILE',     link: '#',               isLogout: false },
-    { id: 'users',       icon: '👥', label: 'USERS TABLE', link: '#',               isLogout: false },
-    { id: 'projet',      icon: '📋', label: 'PROJECT',     link: '#',               isLogout: false },
-    { id: 'forum',       icon: '💬', label: 'FORUM',       link: '/admin/forum',    isLogout: false },
-    { id: 'publicite',   icon: '📷', label: 'ADVERTISING', link: '#',               isLogout: false },
-    { id: 'evenement',   icon: '📅', label: 'EVENTS',      link: '#',               isLogout: false },
-    // ✅ FIX : isLogout=true déclenche authService.logout() dans onMenuClick()
-    { id: 'deconnexion', icon: '🔌', label: 'LOGOUT',      link: '#',               isLogout: true  }
+    { id: 'dashboard',     icon: 'dashboard',        label: 'Dashboard',         link: '/admin/dashboard' },
+    { id: 'users',         icon: 'people',           label: 'Utilisateurs',      link: '/admin/users' },
+    { id: 'forum',         icon: 'forum',            label: 'Forum',             link: '/admin/forum' },
+    { id: 'ads',           icon: 'campaign',         label: 'Publicités',        link: '/admin/ads' },
+    { id: 'transactions',  icon: 'payments',         label: 'Transactions',      link: '/admin/transactions' },
   ];
+
+  subscriptionItems = [
+    { id: 'sub-list',   icon: 'list',           label: 'Liste Abonnements', link: '/admin/subscription/list' },
+    { id: 'sub-create', icon: 'add_circle',     label: 'Créer Abonnement',  link: '/admin/subscription/create' },
+    { id: 'sub-stats',  icon: 'bar_chart',      label: 'Statistiques',      link: '/admin/subscription/stats' },
+    { id: 'sub-churn',  icon: 'trending_down',  label: 'Churn Prediction',  link: '/admin/subscription/churn' },
+    { id: 'sub-promos', icon: 'local_offer',    label: 'Promotions',        link: '/admin/subscription/promos' },
+  ];
+
+  subscriptionMenuOpen: boolean = false;
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    if (user) {
+      this.userName = user.email.split('@')[0];
+      this.userRole = user.role;
+    }
+  }
 
   setActiveMenu(menuId: string): void {
     this.activeMenu = menuId;
   }
 
-  // ✅ FIX : gère la navigation ET le logout
+  toggleSubscriptionMenu(): void {
+    this.subscriptionMenuOpen = !this.subscriptionMenuOpen;
+  }
+
   onMenuClick(event: Event, item: any): void {
     event.preventDefault();
-    if (item.isLogout) {
-      this.authService.logout();
-      this.router.navigate(['/login']);
-    } else {
-      this.setActiveMenu(item.id);
-      if (item.link !== '#') {
-        this.router.navigate([item.link]);
-      }
+    this.setActiveMenu(item.id);
+    if (item.link && item.link !== '#') {
+      this.router.navigate([item.link]);
     }
+  }
+
+  goToFrontoffice(): void {
+    this.router.navigate(['/app/dashboard']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

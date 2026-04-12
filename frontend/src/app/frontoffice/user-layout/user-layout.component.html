@@ -11,18 +11,48 @@
     </button>
 
     <div class="navbar-links" [class.open]="mobileMenuOpen">
-      <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active" (click)="mobileMenuOpen = false">
+      <!-- Dashboard -->
+      <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active" 
+         [routerLinkActiveOptions]="{exact: true}" (click)="closeAllMenus()">
         <i class="material-icons">dashboard</i> Dashboard
       </a>
-      <a class="nav-link" routerLink="/app/forum" routerLinkActive="active" (click)="mobileMenuOpen = false">
+      
+      <!-- Forum -->
+      <a class="nav-link" routerLink="/app/forum" routerLinkActive="active" (click)="closeAllMenus()">
         <i class="material-icons">forum</i> Forum
       </a>
-      <a class="nav-link" routerLink="/app/ads" routerLinkActive="active" (click)="mobileMenuOpen = false">
-        <i class="material-icons">campaign</i> Publicite
+      
+      <!-- Publicité -->
+      <a class="nav-link" routerLink="/app/ads" routerLinkActive="active" (click)="closeAllMenus()">
+        <i class="material-icons">campaign</i> Publicité
       </a>
-      <a class="nav-link" routerLink="/app/transactions" routerLinkActive="active" (click)="mobileMenuOpen = false">
+      
+      <!-- Transactions -->
+      <a class="nav-link" routerLink="/app/transactions" routerLinkActive="active" (click)="closeAllMenus()">
         <i class="material-icons">payments</i> Transactions
       </a>
+
+      <!-- Abonnements Dropdown -->
+      <div class="subscription-dropdown">
+        <a class="nav-link" (click)="toggleSubscriptionDropdown(); $event.stopPropagation()">
+          <i class="material-icons">card_membership</i> Abonnements
+          <i class="material-icons arrow">{{ subscriptionDropdownOpen ? 'expand_less' : 'expand_more' }}</i>
+        </a>
+        <div class="subscription-menu" [class.open]="subscriptionDropdownOpen">
+          <a class="subscription-item" routerLink="/app/subscription/plans" (click)="closeAllMenus()">
+            <i class="material-icons">view_list</i> Voir les Plans
+          </a>
+          <a class="subscription-item" routerLink="/app/subscription/my" (click)="closeAllMenus()">
+            <i class="material-icons">subscriptions</i> Mon Abonnement
+          </a>
+          <a class="subscription-item" routerLink="/app/subscription/ai-recommendation" (click)="closeAllMenus()">
+            <i class="material-icons">psychology</i> AI Recommandation
+          </a>
+          <a class="subscription-item" routerLink="/app/subscription/stats" (click)="closeAllMenus()">
+            <i class="material-icons">bar_chart</i> Statistiques
+          </a>
+        </div>
+      </div>
     </div>
 
     <div class="navbar-right">
@@ -45,8 +75,25 @@
             </div>
           </div>
           <div class="dropdown-divider"></div>
+          
+          <!-- Liens rapides -->
+          <a class="dropdown-item" routerLink="/app/subscription/plans" (click)="profileDropdownOpen = false">
+            <i class="material-icons">card_membership</i> Abonnements
+          </a>
+          <a class="dropdown-item" routerLink="/app/subscription/my" (click)="profileDropdownOpen = false">
+            <i class="material-icons">subscriptions</i> Mon Abonnement
+          </a>
+          
+          <div class="dropdown-divider"></div>
+          
+          <!-- Admin Panel - visible seulement pour ADMIN -->
+          <a class="dropdown-item admin-item" *ngIf="isAdmin" (click)="goToAdmin(); profileDropdownOpen = false">
+            <i class="material-icons">admin_panel_settings</i> Admin Panel
+          </a>
+          
+          <!-- Logout -->
           <a class="dropdown-item logout-item" (click)="logout(); profileDropdownOpen = false">
-            <i class="material-icons">logout</i> Logout
+            <i class="material-icons">logout</i> Déconnexion
           </a>
         </div>
       </div>

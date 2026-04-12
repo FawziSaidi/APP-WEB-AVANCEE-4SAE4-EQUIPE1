@@ -9,8 +9,6 @@ import { AppComponent } from './app.component';
 import { UserLayoutComponent } from './frontoffice/user-layout/user-layout.component';
 import { LandingModule } from './authentification/landing/landing.module';
 import { AuthModule } from './authentification/auth/auth.module';
-
-// ✅ KEYCLOAK : intercepteur qui injecte le Bearer token dans chaque requête
 import { AuthInterceptor } from './services/auth.interceptor';
 
 @NgModule({
@@ -30,7 +28,6 @@ import { AuthInterceptor } from './services/auth.interceptor';
     UserLayoutComponent,
   ],
   providers: [
-    // ✅ KEYCLOAK : enregistrement de l'intercepteur HTTP
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,

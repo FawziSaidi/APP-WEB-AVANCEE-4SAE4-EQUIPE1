@@ -12,9 +12,9 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
   navbarScrolled = false;
   profileDropdownOpen = false;
   mobileMenuOpen = false;
+  subscriptionDropdownOpen = false;
   currentYear = new Date().getFullYear();
 
-  // Infos utilisateur connecté
   userName = '';
   userEmail = '';
 
@@ -31,7 +31,10 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
     return this.currentRole === 'client';
   }
 
-  // Initiales pour l'avatar
+  get isAdmin(): boolean {
+    return this.currentRole === 'admin';
+  }
+
   get userInitials(): string {
     if (!this.userName) return '?';
     const parts = this.userName.trim().split(' ');
@@ -55,6 +58,9 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
     if (!target.closest('.profile-dropdown-wrapper')) {
       this.profileDropdownOpen = false;
     }
+    if (!target.closest('.subscription-dropdown')) {
+      this.subscriptionDropdownOpen = false;
+    }
   }
 
   ngOnInit(): void {
@@ -70,17 +76,14 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
     const session = this.authService.getCurrentUser();
     if (!session) return;
 
-    // L'email est déjà dans la session
     this.userEmail = session.email;
 
-    // Charger le nom depuis l'API users
     this.http.get<any>(`http://localhost:8222/users/${session.userId}`).subscribe({
       next: (user) => {
         const full = [user.name, user.lastName].filter(Boolean).join(' ').trim();
         this.userName = full || session.email;
       },
       error: () => {
-        // Fallback sur l'email si l'API échoue
         this.userName = session.email;
       }
     });
@@ -88,14 +91,26 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
 
   toggleProfileDropdown(): void {
     this.profileDropdownOpen = !this.profileDropdownOpen;
+    this.subscriptionDropdownOpen = false;
+  }
+
+  toggleSubscriptionDropdown(): void {
+    this.subscriptionDropdownOpen = !this.subscriptionDropdownOpen;
+    this.profileDropdownOpen = false;
   }
 
   toggleMobileMenu(): void {
     this.mobileMenuOpen = !this.mobileMenuOpen;
   }
 
+  closeAllMenus(): void {
+    this.mobileMenuOpen = false;
+    this.subscriptionDropdownOpen = false;
+    this.profileDropdownOpen = false;
+  }
+
   goToAdmin(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/admin/dashboard']);
   }
 
   logout(): void {

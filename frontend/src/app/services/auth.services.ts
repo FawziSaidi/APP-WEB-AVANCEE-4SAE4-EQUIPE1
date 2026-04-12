@@ -107,7 +107,6 @@ export class AuthService {
   private getUserFromStorage(): SessionUser | null {
     const stored = localStorage.getItem('sessionUser');
     if (!stored) return null;
-
     try {
       const parsed: SessionUser = JSON.parse(stored);
       if (parsed.userId === null || parsed.userId === undefined) {

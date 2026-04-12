@@ -9,19 +9,13 @@ const routes: Routes = [
     path: '',
     component: BackofficeLayoutComponent,
     children: [
-      { 
-        path: '', 
-        redirectTo: 'dashboard', 
-        pathMatch: 'full' 
-      },
-      { 
-        path: 'dashboard', 
-        component: DashboardComponent 
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'forum', component: GestionForumComponent },
       {
-        path: 'forum',
-        component: GestionForumComponent
-      }
+        path: 'subscriptions',
+        loadChildren: () => import('./subscriptions/subscriptions.module').then(m => m.SubscriptionsModule)
+      },
     ]
   }
 ];
@@ -30,4 +24,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class BackofficeRoutingModule { }
+export class BackofficeRoutingModule {}
