@@ -11,11 +11,13 @@ import org.springframework.stereotype.Service;
 /**
  * Producteur RabbitMQ côté user-service.
  *
- * Publie un UserEventDTO dans les TROIS queues à chaque
+ * Publie un UserEventDTO dans les CINQ queues à chaque
  * création ou modification d'un utilisateur :
- *  - user.sync.queue             → publication-service
- *  - user.sync.queue.commentaire → commentaire-service
- *  - user.sync.queue.reaction    → reaction-service        ← NOUVEAU
+ *  - user.sync.queue.publication  → publication-service
+ *  - user.sync.queue.commentaire  → commentaire-service
+ *  - user.sync.queue.reaction     → reaction-service
+ *  - user.sync.queue.promo        → promo-service          ← NOUVEAU
+ *  - user.sync.queue.subscription → subscription-service   ← NOUVEAU
  */
 @Service
 @RequiredArgsConstructor
@@ -26,13 +28,19 @@ public class UserProducer {
 
     public void publishUser(UserEventDTO dto) {
         // Publication vers publication-service
-        publishToQueue(RabbitMQConfig.USER_QUEUE_PUBLICATION , dto);
+        publishToQueue(RabbitMQConfig.USER_QUEUE_PUBLICATION, dto);
 
         // Publication vers commentaire-service
         publishToQueue(RabbitMQConfig.USER_QUEUE_COMMENTAIRE, dto);
 
         // Publication vers reaction-service
-        publishToQueue(RabbitMQConfig.USER_QUEUE_REACTION, dto);   // ← NOUVEAU
+        publishToQueue(RabbitMQConfig.USER_QUEUE_REACTION, dto);
+
+        // Publication vers promo-service
+        publishToQueue(RabbitMQConfig.USER_QUEUE_PROMO, dto);           // ← NOUVEAU
+
+        // Publication vers subscription-service
+        publishToQueue(RabbitMQConfig.USER_QUEUE_SUBSCRIPTION, dto);    // ← NOUVEAU
     }
 
     private void publishToQueue(String queueName, UserEventDTO dto) {
