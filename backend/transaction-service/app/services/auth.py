@@ -54,9 +54,8 @@ async def get_current_user(
             token,
             rsa_key,
             algorithms=["RS256"],
-            audience=settings.keycloak_client_id,
             issuer=settings.keycloak_issuer,
-            options={"verify_at_hash": False},
+            options={"verify_at_hash": False, "verify_aud": False},
         )
         return payload
 

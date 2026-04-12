@@ -61,6 +61,7 @@ spring:
           predicates: [Path=/api/transactions/**]
           filters:
             - StripPrefix=0
+            - TokenRelay=
 
         # -- ADS SERVICE --
         - id: ads-campaigns

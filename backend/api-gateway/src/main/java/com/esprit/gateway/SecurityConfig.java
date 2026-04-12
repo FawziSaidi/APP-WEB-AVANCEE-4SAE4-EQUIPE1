@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .pathMatchers("/api/reactions/**").permitAll()
                         .pathMatchers("/uploads/**").permitAll()
                         .pathMatchers("/api/plans/**").permitAll()
+                        .pathMatchers("/api/transactions/**").permitAll()
                         .pathMatchers("/api/campaigns/active").permitAll()
                         .anyExchange().authenticated()
                 )

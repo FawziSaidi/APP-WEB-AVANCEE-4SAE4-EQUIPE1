@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface TransactionRequest {
   receiver_id: string;
@@ -32,6 +33,8 @@ export class TransactionService {
   }
 
   getHistory(): Observable<Transaction[]> {
-    return this.http.get<Transaction[]>(`${this.base}/history`);
+    return this.http.get<{ transactions: Transaction[]; total: number }>(`${this.base}/history`).pipe(
+      map(response => response.transactions)
+    );
   }
 }
