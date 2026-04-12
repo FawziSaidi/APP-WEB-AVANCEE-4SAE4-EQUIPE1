@@ -11,7 +11,9 @@ spring:
   cloud:
     gateway:
       routes:
-        # -- USER SERVICE --
+        # ══════════════════════════════════════════
+        # USER SERVICE
+        # ══════════════════════════════════════════
         - id: user-service-auth
           uri: lb://user-service
           predicates: [Path=/api/auth/**]
@@ -24,7 +26,9 @@ spring:
             - StripPrefix=0
             - TokenRelay=
 
-        # -- PUBLICATION SERVICE --
+        # ══════════════════════════════════════════
+        # PUBLICATION SERVICE
+        # ══════════════════════════════════════════
         - id: publication-service
           uri: lb://publication-service
           predicates: [Path=/api/publications/**]
@@ -39,7 +43,9 @@ spring:
             - StripPrefix=0
             - TokenRelay=
 
-        # -- COMMENTAIRE SERVICE --
+        # ══════════════════════════════════════════
+        # COMMENTAIRE SERVICE
+        # ══════════════════════════════════════════
         - id: commentaire-service
           uri: lb://commentaire-service
           predicates: [Path=/api/commentaires/**]
@@ -47,7 +53,9 @@ spring:
             - StripPrefix=0
             - TokenRelay=
 
-        # -- REACTION SERVICE --
+        # ══════════════════════════════════════════
+        # REACTION SERVICE
+        # ══════════════════════════════════════════
         - id: reaction-service
           uri: lb://reaction-service
           predicates: [Path=/api/reactions/**]
@@ -55,7 +63,9 @@ spring:
             - StripPrefix=0
             - TokenRelay=
 
-        # -- TRANSACTION SERVICE (Python/FastAPI - direct URI, not on Eureka) --
+        # ══════════════════════════════════════════
+        # TRANSACTION SERVICE (Python/FastAPI)
+        # ══════════════════════════════════════════
         - id: transaction-service
           uri: http://transaction-service:8086
           predicates: [Path=/api/transactions/**]
@@ -63,7 +73,9 @@ spring:
             - StripPrefix=0
             - TokenRelay=
 
-        # -- ADS SERVICE --
+        # ══════════════════════════════════════════
+        # ADS SERVICE
+        # ══════════════════════════════════════════
         - id: ads-campaigns
           uri: lb://ads-service
           predicates: [Path=/api/campaigns/**]
@@ -76,6 +88,58 @@ spring:
           predicates: [Path=/api/plans/**]
           filters:
             - StripPrefix=0
+
+        # ══════════════════════════════════════════
+        # SUBSCRIPTION SERVICE
+        # ══════════════════════════════════════════
+        - id: subscription-service-subscriptions
+          uri: lb://subscription-service
+          predicates: [Path=/api/subscriptions/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: subscription-service-user-subscriptions
+          uri: lb://subscription-service
+          predicates: [Path=/api/user-subscriptions/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: subscription-service-promos
+          uri: lb://subscription-service
+          predicates: [Path=/api/promos/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: subscription-service-payments
+          uri: lb://subscription-service
+          predicates: [Path=/api/payments/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: subscription-service-stats
+          uri: lb://subscription-service
+          predicates: [Path=/api/subscription-stats/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: subscription-service-recommendations
+          uri: lb://subscription-service
+          predicates: [Path=/api/recommendations/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: subscription-service-churn
+          uri: lb://subscription-service
+          predicates: [Path=/api/churn/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
 
 server:
   port: 8222
