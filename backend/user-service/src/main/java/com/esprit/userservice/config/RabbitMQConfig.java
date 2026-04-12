@@ -16,12 +16,19 @@ public class RabbitMQConfig {
     public static final String USER_QUEUE_REACTION     = "user.sync.queue.reaction";
     public static final String USER_QUEUE_PROMO        = "user.sync.queue.promo";
     public static final String USER_QUEUE_SUBSCRIPTION = "user.sync.queue.subscription";
+    public static final String USER_QUEUE_PROJECT     = "user.sync.queue.project";
+    public static final String USER_QUEUE_APPLICATION = "user.sync.queue.application";
+    public static final String USER_QUEUE_SKILL       = "user.sync.queue.skill";
 
     @Bean public Queue userQueuePublication()  { return new Queue(USER_QUEUE_PUBLICATION,  true); }
     @Bean public Queue userQueueCommentaire()  { return new Queue(USER_QUEUE_COMMENTAIRE,  true); }
     @Bean public Queue userQueueReaction()     { return new Queue(USER_QUEUE_REACTION,     true); }
     @Bean public Queue userQueuePromo()        { return new Queue(USER_QUEUE_PROMO,        true); }
     @Bean public Queue userQueueSubscription() { return new Queue(USER_QUEUE_SUBSCRIPTION, true); }
+    @Bean public Queue userQueueProject()     { return new Queue(USER_QUEUE_PROJECT,     true); }
+    @Bean public Queue userQueueApplication() { return new Queue(USER_QUEUE_APPLICATION, true); }
+    @Bean public Queue userQueueSkill()       { return new Queue(USER_QUEUE_SKILL,       true); }
+
 
     @Bean
     public MessageConverter jsonMessageConverter() {

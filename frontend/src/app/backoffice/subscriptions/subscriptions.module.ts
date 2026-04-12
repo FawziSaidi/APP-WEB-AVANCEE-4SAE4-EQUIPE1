@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';  // ✅ ADD THIS
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+
 import { SubscriptionsRoutingModule } from './subscriptions-routing.module';
 import { SubscriptionListComponent } from './subscription-list/subscription-list.component';
 import { SubscriptionFormComponent } from './subscription-form/subscription-form.component';
@@ -20,8 +21,9 @@ import { PromoManagementComponent } from './promo-management/promo-management.co
   imports: [
     CommonModule,
     FormsModule,
-    HttpClientModule,   // ✅ ADD THIS — nécessaire pour les appels HTTP
-    SubscriptionsRoutingModule,
-  ],
+    ReactiveFormsModule,
+    HttpClientModule,
+    SubscriptionsRoutingModule
+  ]
 })
-export class SubscriptionsModule {}
+export class SubscriptionsModule { }

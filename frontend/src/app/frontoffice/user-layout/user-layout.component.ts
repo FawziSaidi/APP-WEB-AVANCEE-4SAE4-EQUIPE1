@@ -110,7 +110,7 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
   }
 
   goToAdmin(): void {
-    this.router.navigate(['/admin/dashboard']);
+    this.router.navigate(['/admin/projects']);
   }
 
   logout(): void {

@@ -119,8 +119,8 @@ services:
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/ProlanceRealm/protocol/openid-connect/certs
       KEYCLOAK_SERVERURL: http://keycloak:8080
       KEYCLOAK_REALM: ProlanceRealm
-      KEYCLOAK_CLIENT_ID: prolance-client
-      KEYCLOAK_CLIENT_SECRET: S5EJYOv8Kw3056NGcgJHkYswiyGG2S2r
+      KEYCLOAK_CLIENT_ID: api-gateway
+      KEYCLOAK_CLIENT_SECRET: h3CBVozFp6JGyq0jNN338WrikC2Vwy3W
     depends_on:
       mysql:
         condition: service_healthy
@@ -249,7 +249,7 @@ services:
       retries: 5
       start_period: 20s
 
-  # ========================= POSTGRES (for ads-service) =========================
+  # ========================= POSTGRES =========================
 
   postgres:
     image: postgres:16-alpine
@@ -339,6 +339,87 @@ services:
       SPRING_DATASOURCE_PASSWORD: ""
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_RABBITMQ_HOST: rabbitmq
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # ========================= PROJECT SERVICE =========================
+
+  project-service:
+    build:
+      context: ./backend/project-service
+      dockerfile: Dockerfile
+    container_name: project-service
+    ports:
+      - "8094:8094"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/web_project?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SERVER_PORT: 8094
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # ========================= APPLICATION SERVICE =========================
+
+  application-service:
+    build:
+      context: ./backend/application-service
+      dockerfile: Dockerfile
+    container_name: application-service
+    ports:
+      - "8095:8095"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/web_application?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SERVER_PORT: 8095
+    depends_on:
+      mysql:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - microservices-net
+    restart: unless-stopped
+
+  # ========================= SKILL SERVICE =========================
+
+  skill-service:
+    build:
+      context: ./backend/skill-service
+      dockerfile: Dockerfile
+    container_name: skill-service
+    ports:
+      - "8096:8096"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/web_skill?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ""
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SERVER_PORT: 8096
     depends_on:
       mysql:
         condition: service_healthy

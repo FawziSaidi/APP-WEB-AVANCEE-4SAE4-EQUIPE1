@@ -18,6 +18,29 @@
       </div>
     </div>
   </div>
+  <!-- ✅ BARRE DE NAVIGATION INTERNE -->
+  <div class="sub-nav-bar">
+    <a class="sub-nav-btn active" routerLink="/admin/subscription/list" routerLinkActive="active">
+      <i class="material-icons">card_membership</i>
+      <span>Abonnements</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/stats" routerLinkActive="active">
+      <i class="material-icons">bar_chart</i>
+      <span>Statistiques</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/churn" routerLinkActive="active">
+      <i class="material-icons">trending_down</i>
+      <span>AI Churn</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/promos" routerLinkActive="active">
+      <i class="material-icons">local_offer</i>
+      <span>Codes Promo</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/create" routerLinkActive="active">
+      <i class="material-icons">add_circle</i>
+      <span>Nouveau Plan</span>
+    </a>
+  </div>
 
   <!-- ═══ LOADING ═══ -->
   <div class="loading-state" *ngIf="loading">

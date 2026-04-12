@@ -12,11 +12,10 @@
 
     <div class="navbar-links" [class.open]="mobileMenuOpen">
       <!-- Dashboard -->
-      <a class="nav-link" routerLink="/app/dashboard" routerLinkActive="active" 
-         [routerLinkActiveOptions]="{exact: true}" (click)="closeAllMenus()">
-        <i class="material-icons">dashboard</i> Dashboard
-      </a>
       
+      <a class="nav-link" routerLink="/app/projects" routerLinkActive="active" (click)="mobileMenuOpen = false">
+            <i class="material-icons">folder_shared</i> Projects
+          </a>
       <!-- Forum -->
       <a class="nav-link" routerLink="/app/forum" routerLinkActive="active" (click)="closeAllMenus()">
         <i class="material-icons">forum</i> Forum

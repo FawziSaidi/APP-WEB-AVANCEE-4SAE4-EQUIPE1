@@ -8,60 +8,25 @@
     </div>
   </div>
 
-  <!-- User Info -->
-  <div class="user-info">
-    <i class="material-icons user-avatar">account_circle</i>
-    <div class="user-details">
-      <span class="user-name">{{ userName }}</span>
-      <span class="user-role">{{ userRole }}</span>
-    </div>
-  </div>
-
   <!-- Navigation -->
   <nav class="menu">
-    <!-- Menu Items principaux -->
     <a *ngFor="let item of menuItems"
-       href="#"
-       class="menu-item"
-       [class.active]="activeMenu === item.id"
-       (click)="onMenuClick($event, item)">
+       [routerLink]="item.link"
+       routerLinkActive="active"
+       class="menu-item">
       <i class="material-icons menu-icon">{{ item.icon }}</i>
       <span class="menu-label">{{ item.label }}</span>
     </a>
-
-    <!-- Subscription Dropdown -->
-    <div class="menu-dropdown">
-      <a href="#" 
-         class="menu-item dropdown-toggle" 
-         [class.active]="activeMenu.startsWith('sub-')"
-         (click)="$event.preventDefault(); toggleSubscriptionMenu()">
-        <i class="material-icons menu-icon">card_membership</i>
-        <span class="menu-label">Abonnements</span>
-        <i class="material-icons arrow">{{ subscriptionMenuOpen ? 'expand_less' : 'expand_more' }}</i>
-      </a>
-      <div class="dropdown-menu" [class.open]="subscriptionMenuOpen">
-        <a *ngFor="let item of subscriptionItems"
-           href="#"
-           class="menu-item sub-item"
-           [class.active]="activeMenu === item.id"
-           (click)="onMenuClick($event, item)">
-          <i class="material-icons menu-icon">{{ item.icon }}</i>
-          <span class="menu-label">{{ item.label }}</span>
-        </a>
-      </div>
-    </div>
   </nav>
 
   <!-- Bottom Actions -->
   <div class="bottom-actions">
-    <!-- Retour au site -->
-    <a href="#" class="menu-item frontoffice-item" (click)="$event.preventDefault(); goToFrontoffice()">
+    <a class="menu-item frontoffice-item" (click)="goToFrontoffice()">
       <i class="material-icons menu-icon">home</i>
       <span class="menu-label">Retour au Site</span>
     </a>
 
-    <!-- Logout -->
-    <a href="#" class="menu-item logout-item" (click)="$event.preventDefault(); logout()">
+    <a class="menu-item logout-item" (click)="logout()">
       <i class="material-icons menu-icon">logout</i>
       <span class="menu-label">Déconnexion</span>
     </a>

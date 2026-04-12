@@ -807,3 +807,63 @@ $risk-low: #00e676;
   .kpi-grid { grid-template-columns: 1fr; }
   .churn-header { flex-direction: column; align-items: flex-start; gap: 12px; }
 }
+// ══════════════════════════════════════════════════════════════
+//  BARRE DE NAVIGATION INTERNE  ← AJOUTÉ
+// ══════════════════════════════════════════════════════════════
+
+.sub-nav-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  background: var(--card-bg, #1e1e2e);
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-wrap: wrap;
+}
+
+.sub-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+
+  i.material-icons { font-size: 18px; }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &.active,
+  &.router-link-active {
+    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    color: white;
+    border-color: rgba(124, 58, 237, 0.4);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .sub-nav-bar {
+    background: #f8f9fa;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .sub-nav-btn {
+    color: rgba(0, 0, 0, 0.5);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+      color: rgba(0, 0, 0, 0.8);
+    }
+  }
+}

@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     // Si déjà connecté, rediriger directement
     if (this.authService.isLoggedIn()) {
       const role = this.authService.getRole();
-      this.router.navigate(role === 'ADMIN' ? ['/admin/dashboard'] : ['/app']);
+      this.router.navigate(role === 'ADMIN' ? ['/admin/projects'] : ['/app']);
     }
   }
 
@@ -84,9 +84,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.user = { email: authRequest.email, role: res.role };
 
         if (res.role === 'ADMIN') {
-          this.router.navigate(['/admin/dashboard']);
+          this.router.navigate(['/admin/projects']);
         } else {
-          this.router.navigate(['/app']);
+          this.router.navigate(['/app/projects']);
         }
       },
       error: (err) => {
@@ -106,7 +106,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     setTimeout(() => {
       this.isLoading = false;
-      this.router.navigate(['/app/dashboard']);
+      this.router.navigate(['/app/projects']);
     }, 1200);
   }
 }

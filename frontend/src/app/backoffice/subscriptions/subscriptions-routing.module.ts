@@ -7,13 +7,13 @@ import { ChurnPredictionComponent } from './churn-prediction/churn-prediction.co
 import { PromoManagementComponent } from './promo-management/promo-management.component';
 
 const routes: Routes = [
-  { path: 'list',      component: SubscriptionListComponent },
-  { path: 'create',    component: SubscriptionFormComponent },
-  { path: 'edit/:id',  component: SubscriptionFormComponent },
-  { path: 'stats',     component: SubscriptionStatsComponent },
-  { path: 'churn',     component: ChurnPredictionComponent },
-  { path: 'promos',    component: PromoManagementComponent },
-  { path: '',          redirectTo: 'list', pathMatch: 'full' },
+  { path: '', redirectTo: 'list', pathMatch: 'full' },
+  { path: 'list', component: SubscriptionListComponent },
+  { path: 'create', component: SubscriptionFormComponent },
+  { path: 'edit/:id', component: SubscriptionFormComponent },
+  { path: 'stats', component: SubscriptionStatsComponent },
+  { path: 'churn', component: ChurnPredictionComponent },
+  { path: 'promos', component: PromoManagementComponent },
 ];
 
 @NgModule({

@@ -10,6 +10,8 @@ export interface SessionUser {
   refreshToken: string;
   expiresAt: number;
   userId: number;
+  name: string;
+  lastName: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,32 +25,63 @@ export class AuthService {
 
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.checkAndRefreshToken();
+  }
+
+  // ---------- API ----------
 
   register(request: RegisterRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, request, { responseType: 'text' });
+    localStorage.setItem('pending_name', request.name);
+    localStorage.setItem('pending_lastName', request.lastName);
+    localStorage.setItem('pending_email', request.email);
+
+    return this.http.post(this.apiUrl + '/register', request, { responseType: 'text' });
   }
 
   login(request: AuthRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request);
+    return this.http.post<AuthResponse>(this.apiUrl + '/login', request);
   }
 
   refreshAccessToken(): Observable<AuthResponse> {
     const user = this.currentUserSubject.value;
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, {
+    return this.http.post<AuthResponse>(this.apiUrl + '/refresh', {
       refreshToken: user?.refreshToken
     });
   }
 
+  // ---------- SESSION ----------
+
   setSession(res: AuthResponse, email: string): void {
     const expiresIn = res.expiresIn ?? 300;
+
+    const pendingEmail = localStorage.getItem('pending_email');
+    const pendingName = localStorage.getItem('pending_name');
+    const pendingLastName = localStorage.getItem('pending_lastName');
+    const existingSession = this.getUserFromStorage();
+    let name = '';
+    let lastName = '';
+
+    if (pendingEmail === email && pendingName) {
+      name = pendingName;
+      lastName = pendingLastName || '';
+      localStorage.removeItem('pending_name');
+      localStorage.removeItem('pending_lastName');
+      localStorage.removeItem('pending_email');
+    } else if (existingSession?.email === email) {
+      name = (existingSession as any).name || '';
+      lastName = (existingSession as any).lastName || '';
+    }
+
     const user: SessionUser = {
       email,
       role: res.role,
       token: res.token,
       refreshToken: (res as any).refreshToken ?? '',
       expiresAt: Date.now() + (expiresIn * 1000),
-      userId: res.userId
+      userId: res.userId,
+      name,
+      lastName
     };
     localStorage.setItem('sessionUser', JSON.stringify(user));
     this.currentUserSubject.next(user);
@@ -68,6 +101,14 @@ export class AuthService {
     this.currentUserSubject.next(updated);
   }
 
+  updateSessionName(name: string, lastName: string): void {
+    const current = this.currentUserSubject.value;
+    if (!current) return;
+    const updated = { ...current, name, lastName };
+    localStorage.setItem('sessionUser', JSON.stringify(updated));
+    this.currentUserSubject.next(updated);
+  }
+
   getToken(): string | null {
     return this.currentUserSubject.value?.token ?? null;
   }
@@ -81,6 +122,22 @@ export class AuthService {
     const user = this.currentUserSubject.value;
     if (!user || !user.expiresAt) return true;
     return Date.now() > (user.expiresAt - 30000);
+  }
+
+  private checkAndRefreshToken(): void {
+    if (!this.isLoggedIn()) return;
+    if (!this.isTokenExpired()) return;
+
+    const user = this.currentUserSubject.value;
+    if (!user?.refreshToken) {
+      this.logout();
+      return;
+    }
+
+    this.refreshAccessToken().subscribe({
+      next: (res) => this.updateToken(res),
+      error: () => this.logout()
+    });
   }
 
   logout(): void {

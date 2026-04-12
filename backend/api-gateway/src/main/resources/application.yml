@@ -6,10 +6,34 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/ProlanceRealm
+          issuer-uri: http://localhost:8080/realms/ProlanceRealm
 
   cloud:
     gateway:
+      # ══════════════════════════════════════════
+      # CORS GLOBAL CONFIGURATION
+      # ══════════════════════════════════════════
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+
+      # ══════════════════════════════════════════
+      # DEFAULT FILTERS (Remove duplicate CORS headers)
+      # ══════════════════════════════════════════
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
       routes:
         # ══════════════════════════════════════════
         # USER SERVICE
@@ -22,23 +46,6 @@ spring:
         - id: user-service-users
           uri: lb://user-service
           predicates: [Path=/users/**]
-          filters:
-            - StripPrefix=0
-            - TokenRelay=
-
-        # ══════════════════════════════════════════
-        # PUBLICATION SERVICE
-        # ══════════════════════════════════════════
-        - id: publication-service
-          uri: lb://publication-service
-          predicates: [Path=/api/publications/**]
-          filters:
-            - StripPrefix=0
-            - TokenRelay=
-
-        - id: publication-uploads
-          uri: lb://publication-service
-          predicates: [Path=/uploads/**]
           filters:
             - StripPrefix=0
             - TokenRelay=
@@ -137,6 +144,62 @@ spring:
         - id: subscription-service-churn
           uri: lb://subscription-service
           predicates: [Path=/api/churn/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        # ══════════════════════════════════════════
+        # PROJECT SERVICE
+        # ══════════════════════════════════════════
+        - id: project-service
+          uri: lb://project-service
+          predicates: [Path=/api/projects/**]
+          filters:
+            - StripPrefix=0
+
+        # ══════════════════════════════════════════
+        # APPLICATION SERVICE
+        # ══════════════════════════════════════════
+        - id: application-service
+          uri: lb://application-service
+          predicates: [Path=/api/applications/**]
+          filters:
+            - StripPrefix=0
+
+        - id: application-service-uploads
+          uri: lb://application-service
+          predicates: [Path=/uploads/cover-letters/**]
+          filters:
+            - StripPrefix=0
+
+        # ══════════════════════════════════════════
+        # SKILL SERVICE
+        # ══════════════════════════════════════════
+        - id: skill-service
+          uri: lb://skill-service
+          predicates: [Path=/api/skills/**]
+          filters:
+            - StripPrefix=0
+
+        - id: skill-service-uploads
+          uri: lb://skill-service
+          predicates: [Path=/uploads/resumes/**]
+          filters:
+            - StripPrefix=0
+
+        # ══════════════════════════════════════════
+        # PUBLICATION SERVICE
+        # ══════════════════════════════════════════
+        - id: publication-service
+          uri: lb://publication-service
+          predicates: [Path=/api/publications/**]
+          filters:
+            - StripPrefix=0
+            - TokenRelay=
+
+        - id: publication-uploads
+          uri: lb://publication-service
+          predicates: [Path=/uploads/**]
           filters:
             - StripPrefix=0
             - TokenRelay=

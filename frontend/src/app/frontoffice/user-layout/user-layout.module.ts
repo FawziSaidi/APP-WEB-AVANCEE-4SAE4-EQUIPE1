@@ -17,7 +17,7 @@ const userRoutes: Routes = [
   {
     path: 'forum',
     loadChildren: () => import('../GestionForum/gestion-forum.module').then(m => m.GestionForumModule)
-  },
+  }, { path: 'projects',  loadChildren: () => import('../ProjectModule/projects.module').then(m => m.ProjectsModule) },
 ];
 
 @NgModule({

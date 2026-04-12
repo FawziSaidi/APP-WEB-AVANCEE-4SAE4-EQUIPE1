@@ -41,6 +41,10 @@ public class UserProducer {
 
         // Publication vers subscription-service
         publishToQueue(RabbitMQConfig.USER_QUEUE_SUBSCRIPTION, dto);    // ← NOUVEAU
+
+        publishToQueue(RabbitMQConfig.USER_QUEUE_PROJECT,     dto);
+        publishToQueue(RabbitMQConfig.USER_QUEUE_APPLICATION, dto);
+        publishToQueue(RabbitMQConfig.USER_QUEUE_SKILL,       dto);
     }
 
     private void publishToQueue(String queueName, UserEventDTO dto) {

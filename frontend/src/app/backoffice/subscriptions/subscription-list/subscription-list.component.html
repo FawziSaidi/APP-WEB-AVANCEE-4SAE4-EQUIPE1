@@ -9,8 +9,38 @@
         <p class="header-subtitle">{{ getTotalFiltered() }} plans available</p>
       </div>
     </div>
+    </div>
+<!-- ✅ BARRE DE NAVIGATION INTERNE -->
+  <div class="sub-nav-bar">
+    <a class="sub-nav-btn active" routerLink="/admin/subscription/list" routerLinkActive="active">
+      <i class="material-icons">card_membership</i>
+      <span>Abonnements</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/stats" routerLinkActive="active">
+      <i class="material-icons">bar_chart</i>
+      <span>Statistiques</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/churn" routerLinkActive="active">
+      <i class="material-icons">trending_down</i>
+      <span>AI Churn</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/promos" routerLinkActive="active">
+      <i class="material-icons">local_offer</i>
+      <span>Codes Promo</span>
+    </a>
+    <a class="sub-nav-btn" routerLink="/admin/subscription/create" routerLinkActive="active">
+      <i class="material-icons">add_circle</i>
+      <span>Nouveau Plan</span>
+    </a>
+  </div>
+
+  <!-- Header -->
+  <div class="list-header">
+    <div class="header-left">
+      
+    </div>
     
-    <!-- ✅ BOUTON AI -->
+
     <div class="header-actions">
       <button class="btn-ai-generate" (click)="openAIModal()">
         <span class="btn-ai-icon">🤖</span>
@@ -20,6 +50,7 @@
     </div>
   </div>
 
+  
   <!-- Filters -->
   <div class="filters-row">
     <div class="search-wrapper">
@@ -115,7 +146,6 @@
       </tbody>
     </table>
 
-    <!-- Empty state -->
     <div class="empty-state" *ngIf="filteredSubscriptions.length === 0">
       <span class="empty-icon">📭</span>
       <p>No plans found</p>
@@ -148,14 +178,10 @@
 
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  AI GENERATION MODAL                                                      -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-
+<!-- AI MODAL (inchangé) -->
 <div class="ai-modal-overlay" *ngIf="showAIModal" (click)="closeAIModal()">
   <div class="ai-modal" (click)="$event.stopPropagation()">
-    
-    <!-- Modal Header -->
+
     <div class="ai-modal-header">
       <div class="ai-modal-title">
         <span class="ai-robot">🤖</span>
@@ -167,14 +193,10 @@
       <button class="ai-close-btn" (click)="closeAIModal()" *ngIf="!aiGenerating && !aiSaving">✕</button>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- Configuration Form (avant génération) -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="ai-modal-body" *ngIf="!aiGenerating && !showAIResults && !aiSaving">
-      
       <div class="ai-config-section">
         <h3>🎯 Configuration</h3>
-        
+
         <div class="ai-form-group">
           <label>Type de plans à générer</label>
           <div class="ai-radio-group">
@@ -205,7 +227,6 @@
               <option [value]="3">3 (Starter + Pro + Elite)</option>
             </select>
           </div>
-          
           <div class="ai-form-group">
             <label>Gamme de prix</label>
             <select [(ngModel)]="aiConfig.priceRange">
@@ -226,7 +247,6 @@
               <option value="BOTH">Les deux</option>
             </select>
           </div>
-          
           <div class="ai-form-group checkbox-group">
             <label class="ai-checkbox">
               <input type="checkbox" [(ngModel)]="aiConfig.includeFree">
@@ -236,7 +256,6 @@
           </div>
         </div>
 
-        <!-- ✅ Option Auto-Save -->
         <div class="ai-auto-save-option">
           <label class="ai-checkbox auto-save">
             <input type="checkbox" [(ngModel)]="aiConfig.autoSave">
@@ -249,7 +268,7 @@
 
       <div class="ai-info-box">
         <span class="ai-info-icon">💡</span>
-        <p>L'IA va analyser le marché et générer des plans optimisés avec les meilleures pratiques de pricing et de features.</p>
+        <p>L'IA va analyser le marché et générer des plans optimisés.</p>
       </div>
 
       <div class="ai-modal-footer">
@@ -261,9 +280,6 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- Generation Progress -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="ai-modal-body ai-generating" *ngIf="aiGenerating">
       <div class="ai-progress-container">
         <div class="ai-brain-animation">
@@ -272,18 +288,13 @@
           <div class="ai-brain-ring"></div>
           <span class="ai-brain-emoji">🧠</span>
         </div>
-        
         <h3>Génération en cours...</h3>
         <p class="ai-current-step">{{ aiCurrentStep }}</p>
-        
         <div class="ai-progress-bar">
           <div class="ai-progress-fill" [style.width.%]="aiProgress"></div>
         </div>
-        
         <div class="ai-steps-list">
-          <div 
-            class="ai-step" 
-            *ngFor="let step of aiSteps; let i = index"
+          <div class="ai-step" *ngFor="let step of aiSteps; let i = index"
             [class.done]="step.done"
             [class.active]="!step.done && (i === 0 || aiSteps[i-1].done)">
             <span class="ai-step-icon">{{ step.done ? '✓' : step.icon }}</span>
@@ -293,39 +304,28 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- Auto-Save Progress -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="ai-modal-body ai-saving" *ngIf="aiSaving">
       <div class="ai-save-container">
         <div class="ai-save-animation">
           <div class="ai-save-ring"></div>
           <span class="ai-save-emoji">💾</span>
         </div>
-        
         <h3>Sauvegarde automatique...</h3>
         <p class="ai-current-step">{{ aiCurrentStep }}</p>
-        
         <div class="ai-progress-bar save-bar">
           <div class="ai-progress-fill save-fill" [style.width.%]="aiSaveProgress"></div>
         </div>
-        
         <p class="ai-save-hint">Les plans sont ajoutés au frontoffice...</p>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- Success Screen (Auto-save terminé) -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="ai-modal-body ai-success" *ngIf="aiSaveSuccess && !aiSaving && !showAIResults">
       <div class="ai-success-container">
         <div class="ai-success-animation">
           <span class="ai-success-check">✓</span>
         </div>
-        
         <h3>{{ aiCurrentStep }}</h3>
         <p class="ai-success-hint">Les plans sont maintenant disponibles dans le frontoffice !</p>
-        
         <div class="ai-success-summary">
           <div class="ai-summary-item">
             <span class="ai-summary-icon">📋</span>
@@ -336,9 +336,6 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!-- Manual Results (si autoSave=false ou erreurs) -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
     <div class="ai-modal-body ai-results" *ngIf="showAIResults && !aiGenerating && !aiSaving">
       <div class="ai-results-header">
         <div class="ai-success-badge">
@@ -346,14 +343,10 @@
           {{ aiGeneratedPlans.length }} plans générés !
         </div>
       </div>
-
       <div class="ai-plans-grid">
-        <div 
-          class="ai-plan-card" 
-          *ngFor="let plan of aiGeneratedPlans"
+        <div class="ai-plan-card" *ngFor="let plan of aiGeneratedPlans"
           [class.freelancer]="plan.type === 'FREELANCER'"
           [class.client]="plan.type === 'CLIENT'">
-          
           <div class="ai-plan-header">
             <span class="ai-plan-icon">{{ getPlanIcon(plan.name) }}</span>
             <div class="ai-plan-info">
@@ -362,41 +355,30 @@
             </div>
             <button class="ai-plan-remove" (click)="removeGeneratedPlan(plan)">✕</button>
           </div>
-          
           <div class="ai-plan-price">
             <span class="ai-price-amount">{{ plan.price }}</span>
             <span class="ai-price-currency">DT</span>
             <span class="ai-price-cycle">/{{ plan.billingCycle === 'SEMESTRIELLE' ? '6 mois' : 'an' }}</span>
           </div>
-          
           <p class="ai-plan-desc">{{ plan.description }}</p>
-          
           <div class="ai-plan-features">
             <div class="ai-feature" *ngIf="plan.maxProposals">
               <span>📨</span> {{ plan.maxProposals >= 999 ? 'Illimité' : plan.maxProposals }}
             </div>
-            <div class="ai-feature" *ngIf="plan.analyticsAccess">
-              <span>📊</span> Analytics
-            </div>
-            <div class="ai-feature" *ngIf="plan.prioritySupport">
-              <span>⭐</span> Support VIP
-            </div>
+            <div class="ai-feature" *ngIf="plan.analyticsAccess"><span>📊</span> Analytics</div>
+            <div class="ai-feature" *ngIf="plan.prioritySupport"><span>⭐</span> Support VIP</div>
           </div>
-          
           <button class="ai-plan-save" (click)="saveGeneratedPlan(plan)">
             <span>💾</span> Enregistrer
           </button>
         </div>
       </div>
-
       <div class="ai-modal-footer" *ngIf="aiGeneratedPlans.length > 0">
         <button class="ai-btn-cancel" (click)="closeAIModal()">Fermer</button>
         <button class="ai-btn-save-all" (click)="saveAllGeneratedPlans()">
-          <span>💾</span>
-          Tout enregistrer ({{ aiGeneratedPlans.length }})
+          <span>💾</span> Tout enregistrer ({{ aiGeneratedPlans.length }})
         </button>
       </div>
-
       <div class="ai-empty-results" *ngIf="aiGeneratedPlans.length === 0">
         <span class="ai-empty-icon">✅</span>
         <p>Tous les plans ont été enregistrés !</p>
