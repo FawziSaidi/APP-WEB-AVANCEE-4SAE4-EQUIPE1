@@ -20,6 +20,22 @@ public class RabbitMQConfig {
     public static final String USER_QUEUE_APPLICATION = "user.sync.queue.application";
     public static final String USER_QUEUE_SKILL       = "user.sync.queue.skill";
 
+    // inscription-service → user-service
+    public static final String USER_QUEUE_INSCRIPTION  = "inscription.user.queue";
+
+    // event-service → user-service
+    public static final String USER_QUEUE_EVENT        = "event-user.queue";
+
+    // activity-service → user-service
+    public static final String USER_QUEUE_ACTIVITY     = "activity-user.queue";
+
+    // ── Nouvelles queues : user-service ÉCOUTE ces services ─────────────────
+    public static final String USER_QUEUE_INSCRIPTION_ACCEPTED = "inscription.accepted";
+    public static final String USER_QUEUE_INSCRIPTION_REJECTED = "inscription.rejected";
+    public static final String USER_QUEUE_EVENT_SYNC           = "user.sync.queue.event";
+    public static final String USER_QUEUE_ACTIVITY_SYNC        = "user.sync.queue.activity";
+
+
     @Bean public Queue userQueuePublication()  { return new Queue(USER_QUEUE_PUBLICATION,  true); }
     @Bean public Queue userQueueCommentaire()  { return new Queue(USER_QUEUE_COMMENTAIRE,  true); }
     @Bean public Queue userQueueReaction()     { return new Queue(USER_QUEUE_REACTION,     true); }
@@ -29,6 +45,9 @@ public class RabbitMQConfig {
     @Bean public Queue userQueueApplication() { return new Queue(USER_QUEUE_APPLICATION, true); }
     @Bean public Queue userQueueSkill()       { return new Queue(USER_QUEUE_SKILL,       true); }
 
+    @Bean public Queue userQueueInscription()  { return new Queue(USER_QUEUE_INSCRIPTION,  true); }
+    @Bean public Queue userQueueEvent()        { return new Queue(USER_QUEUE_EVENT,        true); }
+    @Bean public Queue userQueueActivity()     { return new Queue(USER_QUEUE_ACTIVITY,     true); }
 
     @Bean
     public MessageConverter jsonMessageConverter() {
