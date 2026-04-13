@@ -46,6 +46,7 @@ export class EventService {
 
   private apiUrl = environment.eventServiceUrl;
 
+
   constructor(private http: HttpClient) {}
 
   getAllEvents(): Observable<Event[]> {

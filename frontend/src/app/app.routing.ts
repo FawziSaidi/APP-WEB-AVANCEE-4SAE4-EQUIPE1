@@ -40,6 +40,7 @@ const routes: Routes = [
             (m) => m.SubscriptionsModule
           ),
       },
+      
     ],
   },
   {

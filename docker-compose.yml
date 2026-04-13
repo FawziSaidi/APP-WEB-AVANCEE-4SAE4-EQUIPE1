@@ -459,21 +459,21 @@ services:
       - microservices-net
     restart: unless-stopped
 
-  # Microservice Activity (port 8092)
+  # Microservice Activity (port 8093)
   activity-service:
     build:
       context: ./backend/activity-service
       dockerfile: Dockerfile
     container_name: activity-service
     ports:
-      - "8092:8092"
+      - "8093:8093"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/web_activity?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ""
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_RABBITMQ_HOST: rabbitmq
-      SERVER_PORT: 8092
+      SERVER_PORT: 8093
     depends_on:
       mysql:
         condition: service_healthy

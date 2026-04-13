@@ -15,6 +15,7 @@ export class SidebarComponent implements OnInit {
   menuItems = [
     { icon: 'work',            label: 'Projets',        link: '/admin/projects' },
     { icon: 'forum',           label: 'Forum',          link: '/admin/forum' },
+    { icon: 'event',           label: 'Événements',     link: '/admin/events' },
     { icon: 'campaign',        label: 'Publicités',     link: '/admin/ads' },
     { icon: 'payments',        label: 'Transactions',   link: '/admin/transactions' },
     { icon: 'card_membership', label: 'Abonnements',   link: '/admin/subscription/list' },

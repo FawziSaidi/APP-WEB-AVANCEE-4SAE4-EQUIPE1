@@ -270,20 +270,21 @@ export class AdminStatsComponent implements OnInit {
   buildHeatmap(): void {
     const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     const weeks = 12;
-    this.heatSeries = days.map((day, di) => ({
-      name: day,
-      data: Array.from({ length: weeks }, (_, w) => ({
-        x: `W${w + 1}`,
-        y: this.registrations.filter(r => {
-          const d = new Date(r.registrationDate);
-          const weekIndex = Math.floor(
-            (Date.now() - d.getTime()) / (7 * 24 * 3600 * 1000)
-          );
-          return d.getDay() === (di + 1) % 7 && weekIndex === w;
-        }).length
-      }))
-    }));
-  }
+    this.heatSeries = days.map((day, dayIndex) => ({
+    name: day,
+    data: Array.from({ length: weeks }, (_, weekIndex) => {
+      const count = this.registrations.filter(r => {
+        const d = new Date(r.registrationDate);
+        const registrationWeek = Math.floor(
+          (Date.now() - d.getTime()) / (7 * 24 * 3600 * 1000)
+        );
+        return d.getDay() === (dayIndex + 1) % 7 && registrationWeek === weekIndex;
+      }).length;
+
+      return count;                    // ← IMPORTANT : retourne juste le nombre
+    })
+  }));
+}
 
   // ── Leaderboard ──
   buildLeaderboard(): void {

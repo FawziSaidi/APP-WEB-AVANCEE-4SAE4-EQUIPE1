@@ -9,6 +9,8 @@ import { UserDashboardComponent } from '../../authentification/user-dashboard/us
 import { AdCenterComponent } from '../../pages/ads/ad-center.component';
 import { TransactionsComponent } from '../../pages/transactions/transactions.component';
 
+
+
 const userRoutes: Routes = [
   { path: '',              redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'dashboard',     component: UserDashboardComponent },
@@ -18,6 +20,10 @@ const userRoutes: Routes = [
     path: 'forum',
     loadChildren: () => import('../GestionForum/gestion-forum.module').then(m => m.GestionForumModule)
   }, { path: 'projects',  loadChildren: () => import('../ProjectModule/projects.module').then(m => m.ProjectsModule) },
+  {
+    path: 'events',
+    loadChildren: () => import('../GestionEvenement/gestion-evenement.module').then(m => m.GestionEvenementModule)
+  }
 ];
 
 @NgModule({

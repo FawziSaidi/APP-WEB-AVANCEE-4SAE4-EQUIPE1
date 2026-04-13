@@ -17,14 +17,19 @@ import { EventMapComponent } from './Components/event-map/event-map.component';
     EventListComponent,
     InscriptionFormComponent,
     EventMapComponent,
+    // ← retire ReactiveFormsModule d'ici
   ],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     HttpClientModule,
     GestionEvenementRoutingModule
   ],
-  providers: [EventService, ActivityService, InscriptionService]  // ← InscriptionService ajouté
+  providers: [
+    EventService,
+    ActivityService,
+    InscriptionService
+  ]
 })
-export class GestionEvenementModule {}
+export class GestionEvenementModule { }
