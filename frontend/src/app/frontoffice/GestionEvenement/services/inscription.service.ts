@@ -7,7 +7,7 @@ import { environment } from 'environments/environment';
 @Injectable({ providedIn: 'root' })
 export class InscriptionService {
 
-  private apiUrl = environment.inscriptionServiceUrl;
+  private apiUrl = `${environment.inscriptionServiceUrl}/inscriptions`;
 
   constructor(private http: HttpClient) {}
 

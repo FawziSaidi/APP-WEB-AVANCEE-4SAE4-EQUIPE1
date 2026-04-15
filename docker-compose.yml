@@ -120,7 +120,7 @@ services:
       KEYCLOAK_SERVERURL: http://keycloak:8080
       KEYCLOAK_REALM: ProlanceRealm
       KEYCLOAK_CLIENT_ID: api-gateway
-      KEYCLOAK_CLIENT_SECRET: h3CBVozFp6JGyq0jNN338WrikC2Vwy3W
+      KEYCLOAK_CLIENT_SECRET: l5a7bY72DL0GDPzhxVEOTRqWZQAvJKxB
     depends_on:
       mysql:
         condition: service_healthy
@@ -447,6 +447,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ""
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/ProlanceRealm/protocol/openid-connect/certs
+
       SERVER_PORT: 8085
     depends_on:
       mysql:
@@ -455,6 +457,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      keycloak:
+       condition: service_healthy
     networks:
       - microservices-net
     restart: unless-stopped
@@ -473,6 +477,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ""
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/ProlanceRealm/protocol/openid-connect/certs
+
       SERVER_PORT: 8093
     depends_on:
       mysql:
@@ -481,6 +487,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      keycloak:
+       condition: service_healthy
     networks:
       - microservices-net
     restart: unless-stopped
@@ -499,6 +507,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ""
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI: http://keycloak:8080/realms/ProlanceRealm/protocol/openid-connect/certs
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI: http://keycloak:8080/realms/ProlanceRealm
       SERVER_PORT: 8097
     depends_on:
       mysql:
@@ -507,6 +517,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      keycloak:
+       condition: service_healthy
     networks:
       - microservices-net
     restart: unless-stopped

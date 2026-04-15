@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 // ↓ "activity-service" = le nom exact dans application.properties du activity-service
 // spring.application.name=activity-service
-@FeignClient(name = "activity-service")
+@FeignClient(name = "activity-service"  , configuration = com.esprit.eventservice.config.FeignConfig.class)
 public interface ActivityClient {
 
     // Quand on appelle createActivity(dto) en Java,

@@ -23,7 +23,7 @@ import { EventMapComponent } from './Components/event-map/event-map.component';
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpClientModule,
+    
     GestionEvenementRoutingModule
   ],
   providers: [

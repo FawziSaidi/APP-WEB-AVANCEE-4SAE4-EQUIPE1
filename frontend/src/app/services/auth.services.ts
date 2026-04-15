@@ -77,7 +77,7 @@ export class AuthService {
       email,
       role: res.role,
       token: res.token,
-      refreshToken: (res as any).refreshToken ?? '',
+     refreshToken: res.refreshToken ?? '',
       expiresAt: Date.now() + (expiresIn * 1000),
       userId: res.userId,
       name,
@@ -94,7 +94,7 @@ export class AuthService {
     const updated: SessionUser = {
       ...current,
       token: res.token,
-      refreshToken: (res as any).refreshToken ?? current.refreshToken,
+     refreshToken: res.refreshToken ?? current.refreshToken,
       expiresAt: Date.now() + (expiresIn * 1000)
     };
     localStorage.setItem('sessionUser', JSON.stringify(updated));

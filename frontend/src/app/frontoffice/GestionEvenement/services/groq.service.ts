@@ -16,7 +16,7 @@ export interface GeneratedActivity {
 export class GroqService {
 
   private readonly API_KEY = '#';
-  private readonly API_URL = '#';
+  private readonly API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
   constructor() {}
 

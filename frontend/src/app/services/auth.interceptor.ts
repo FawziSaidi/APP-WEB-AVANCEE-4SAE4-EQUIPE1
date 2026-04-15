@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 export class AuthInterceptor implements HttpInterceptor {
 
   private readonly BACKEND_URL = 'http://localhost:8222';
-  private readonly PUBLIC_URLS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
+private readonly PUBLIC_URLS = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
 
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);

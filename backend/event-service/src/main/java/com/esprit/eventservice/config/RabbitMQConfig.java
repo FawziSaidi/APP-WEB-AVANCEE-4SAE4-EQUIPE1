@@ -1,5 +1,8 @@
 package com.esprit.eventservice.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -11,24 +14,20 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // ── Noms constants ──────────────────────────────────────────────────────
     public static final String QUEUE_NAME    = "event-user.queue";
     public static final String EXCHANGE_NAME = "event-user.exchange";
     public static final String ROUTING_KEY   = "event.user.notification";
 
-    // ── Queue unique ────────────────────────────────────────────────────────
     @Bean
     public Queue eventUserQueue() {
         return QueueBuilder.durable(QUEUE_NAME).build();
     }
 
-    // ── Exchange de type Direct ─────────────────────────────────────────────
     @Bean
     public DirectExchange eventUserExchange() {
         return new DirectExchange(EXCHANGE_NAME);
     }
 
-    // ── Binding Queue ↔ Exchange via la routing key ────────────────────────
     @Bean
     public Binding eventUserBinding(Queue eventUserQueue, DirectExchange eventUserExchange) {
         return BindingBuilder
@@ -37,13 +36,15 @@ public class RabbitMQConfig {
                 .with(ROUTING_KEY);
     }
 
-    // ── Convertisseur JSON ──────────────────────────────────────────────────
+    // ✅ Correction ici : ajout du JavaTimeModule
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return new Jackson2JsonMessageConverter(mapper);
     }
 
-    // ── Template configuré avec le convertisseur JSON ───────────────────────
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);

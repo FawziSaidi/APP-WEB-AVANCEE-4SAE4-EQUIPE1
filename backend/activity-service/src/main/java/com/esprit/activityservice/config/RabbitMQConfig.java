@@ -1,5 +1,8 @@
 package com.esprit.activityservice.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -11,24 +14,20 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // ── Une seule queue pour la communication activity-service ↔ user-service
     public static final String QUEUE_NAME    = "activity-user.queue";
     public static final String EXCHANGE_NAME = "activity-user.exchange";
     public static final String ROUTING_KEY   = "activity.user.notification";
 
-    // ── Queue durable (survit aux redémarrages du broker) ──────────────────
     @Bean
     public Queue activityUserQueue() {
         return QueueBuilder.durable(QUEUE_NAME).build();
     }
 
-    // ── Exchange de type Direct ─────────────────────────────────────────────
     @Bean
     public DirectExchange activityUserExchange() {
         return new DirectExchange(EXCHANGE_NAME);
     }
 
-    // ── Binding : Queue ↔ Exchange via la routing key ──────────────────────
     @Bean
     public Binding activityUserBinding(Queue activityUserQueue,
                                        DirectExchange activityUserExchange) {
@@ -38,13 +37,15 @@ public class RabbitMQConfig {
                 .with(ROUTING_KEY);
     }
 
-    // ── Convertisseur JSON (sérialise les objets Java en JSON) ─────────────
+    // ✅ Correction : ajout du JavaTimeModule pour gérer LocalDateTime
     @Bean
     public MessageConverter jsonMessageConverter() {
-        return new Jackson2JsonMessageConverter();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return new Jackson2JsonMessageConverter(mapper);
     }
 
-    // ── RabbitTemplate configuré avec le convertisseur JSON ────────────────
     @Bean
     public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);

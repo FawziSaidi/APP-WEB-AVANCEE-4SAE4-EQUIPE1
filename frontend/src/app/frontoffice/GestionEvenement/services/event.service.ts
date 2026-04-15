@@ -44,7 +44,7 @@ export interface PageResponse<T> {
 @Injectable({ providedIn: 'root' })
 export class EventService {
 
-  private apiUrl = environment.eventServiceUrl;
+  private apiUrl = `${environment.eventServiceUrl}/events`;
 
 
   constructor(private http: HttpClient) {}

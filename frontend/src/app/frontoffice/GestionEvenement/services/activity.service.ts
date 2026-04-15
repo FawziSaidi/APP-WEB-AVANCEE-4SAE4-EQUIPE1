@@ -7,7 +7,7 @@ import { environment } from 'environments/environment';  // ← corrigé
 @Injectable({ providedIn: 'root' })
 export class ActivityService {
 
-  private apiUrl = environment.activityServiceUrl;
+   private apiUrl = `${environment.activityServiceUrl}/activities`;
 
   constructor(private http: HttpClient) {}
 

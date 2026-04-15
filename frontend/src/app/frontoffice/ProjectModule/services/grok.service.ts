@@ -21,7 +21,7 @@ export interface GeneratedTask {
 export class GrokService {
 
   // ✅ Clé gratuite sur https://console.groq.com → API Keys → Create API Key (gsk_...)
-  private readonly API_KEY = ''; 
+  private readonly API_KEY = '#'; 
   private readonly API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
   constructor() {}
