@@ -1,14 +1,17 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing'; // ← Fixed import
+import { RouterTestingModule } from '@angular/router/testing'; // ← Add this
 import { NavbarComponent } from './navbar.component';
+import { AuthService } from '../../services/auth.services';
 
 describe('NavbarComponent', () => {
   let component: NavbarComponent;
   let fixture: ComponentFixture<NavbarComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => { // ← Use waitForAsync instead of async
     TestBed.configureTestingModule({
-      declarations: [ NavbarComponent ]
+      declarations: [ NavbarComponent ],
+      imports: [ RouterTestingModule ], // ← Add this
+      providers: [ AuthService ] // ← Add this if needed
     })
     .compileComponents();
   }));

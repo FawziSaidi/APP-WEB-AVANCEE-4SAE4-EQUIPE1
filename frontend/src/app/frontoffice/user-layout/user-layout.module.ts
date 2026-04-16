@@ -23,7 +23,11 @@ const userRoutes: Routes = [
   {
     path: 'events',
     loadChildren: () => import('../GestionEvenement/gestion-evenement.module').then(m => m.GestionEvenementModule)
-  }
+  },
+  {
+  path: 'cours',
+  loadChildren: () => import('../cours/cours/cours.module').then(m => m.CoursModule)
+},
 ];
 
 @NgModule({

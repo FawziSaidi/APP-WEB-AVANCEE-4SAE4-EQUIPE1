@@ -13,8 +13,8 @@ import {
   providedIn: 'root'
 })
 export class PromoService {
-  private apiUrl = 'http://localhost:8091/api/promos';
-  private paymentUrl = 'http://localhost:8091/api/payments';
+  private apiUrl = 'http://localhost:8222/api/promos';
+  private paymentUrl = 'http://localhost:8222/api/payments';
 
   constructor(private http: HttpClient) {}
 

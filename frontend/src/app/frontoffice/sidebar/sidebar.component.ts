@@ -15,6 +15,7 @@ export const ROUTES: RouteInfo[] = [
     { path: '/app/dashboard',           title: 'Dashboard',        icon: 'dashboard',       class: '' },
     { path: '/app/forum',               title: 'Forum',            icon: 'forum',           class: '' },
     { path: '/app/events',              title: 'Événements',       icon: 'event',           class: '' },
+    { path: '/app/cours',               title: 'Cours',            icon: 'school',          class: '' }, // ← ADD THIS
     { path: '/app/ads',                 title: 'Publicités',       icon: 'campaign',        class: '' },
     { path: '/app/transactions',        title: 'Transactions',     icon: 'payments',        class: '' },
     { path: '/app/subscription/plans',  title: 'Abonnements',      icon: 'card_membership', class: '' },

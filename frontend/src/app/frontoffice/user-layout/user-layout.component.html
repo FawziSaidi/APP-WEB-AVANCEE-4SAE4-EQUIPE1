@@ -33,6 +33,10 @@
         <i class="material-icons">payments</i> Transactions
       </a>
 
+      <a class="nav-link" routerLink="/app/cours" routerLinkActive="active" (click)="closeAllMenus()">
+        <i class="material-icons">cours</i> cours
+      </a>
+
       <!-- Abonnements Dropdown -->
       <div class="subscription-dropdown">
         <a class="nav-link" (click)="toggleSubscriptionDropdown(); $event.stopPropagation()">

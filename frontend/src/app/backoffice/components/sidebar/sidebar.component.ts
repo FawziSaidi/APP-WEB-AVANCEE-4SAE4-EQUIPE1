@@ -19,6 +19,8 @@ export class SidebarComponent implements OnInit {
     { icon: 'campaign',        label: 'Publicités',     link: '/admin/ads' },
     { icon: 'payments',        label: 'Transactions',   link: '/admin/transactions' },
     { icon: 'card_membership', label: 'Abonnements',   link: '/admin/subscription/list' },
+    { icon: 'menu_book',       label: 'Courses',        link: '/admin/cours' },  // 👈 ADD THIS LINE
+
   ];
 
   constructor(

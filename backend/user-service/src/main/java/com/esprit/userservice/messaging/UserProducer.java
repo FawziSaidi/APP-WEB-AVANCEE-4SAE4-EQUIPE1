@@ -24,10 +24,12 @@ import org.springframework.stereotype.Service;
  *   - user.sync.queue.project      → project-service
  *   - user.sync.queue.application  → application-service
  *   - user.sync.queue.skill        → skill-service
- *  Nouvelles :
  *   - inscription.user.queue       → inscription-service
  *   - event-user.queue             → event-service
  *   - activity-user.queue          → activity-service
+ *  Nouvelles :
+ *   - user.sync.queue.lesson       → lesson-service
+ *   - user.sync.queue.cours        → cours-service
  */
 @Service
 @RequiredArgsConstructor
@@ -37,7 +39,7 @@ public class UserProducer {
     private final RabbitTemplate rabbitTemplate;
 
     public void publishUser(UserEventDTO dto) {
-        // ── Queues existantes ────────────────────────────────────────────
+        // ── Queues existantes ────────────────────────────────────────────────
         publishToQueue(RabbitMQConfig.USER_QUEUE_PUBLICATION,  dto);
         publishToQueue(RabbitMQConfig.USER_QUEUE_COMMENTAIRE,  dto);
         publishToQueue(RabbitMQConfig.USER_QUEUE_REACTION,     dto);
@@ -46,11 +48,13 @@ public class UserProducer {
         publishToQueue(RabbitMQConfig.USER_QUEUE_PROJECT,      dto);
         publishToQueue(RabbitMQConfig.USER_QUEUE_APPLICATION,  dto);
         publishToQueue(RabbitMQConfig.USER_QUEUE_SKILL,        dto);
-
-        // ── Nouvelles queues ─────────────────────────────────────────────
         publishToQueue(RabbitMQConfig.USER_QUEUE_INSCRIPTION,  dto);
         publishToQueue(RabbitMQConfig.USER_QUEUE_EVENT,        dto);
         publishToQueue(RabbitMQConfig.USER_QUEUE_ACTIVITY,     dto);
+
+        // ── Nouvelles queues ─────────────────────────────────────────────────
+        publishToQueue(RabbitMQConfig.USER_QUEUE_LESSON, dto);
+        publishToQueue(RabbitMQConfig.USER_QUEUE_COURS,  dto);
     }
 
     private void publishToQueue(String queueName, UserEventDTO dto) {

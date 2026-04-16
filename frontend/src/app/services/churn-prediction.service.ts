@@ -43,7 +43,7 @@ export interface ChurnPrediction {
   providedIn: 'root',
 })
 export class ChurnPredictionService {
-  private apiUrl = 'http://localhost:8083/subscription/api/churn-prediction';
+  private apiUrl = 'http://localhost:8222/api/churn-prediction';
 
   constructor(private http: HttpClient) {}
 

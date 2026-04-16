@@ -16,7 +16,7 @@ import {
   providedIn: 'root',
 })
 export class RecommendationAIService {
-  private apiUrl = 'http://localhost:8090/subscription/api/recommendations';
+  private apiUrl = 'http://localhost:8222/api/recommendations';
   
   // Cache local pour éviter les appels répétés
   private recommendationCache = new Map<number, { data: AIRecommendation; timestamp: number }>();
