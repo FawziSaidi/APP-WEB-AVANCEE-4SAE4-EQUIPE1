@@ -39,7 +39,7 @@ const routes: Routes = [
           import('./frontoffice/subscriptions/subscriptions.module').then(
             (m) => m.SubscriptionsModule
           ),
-      },
+      }
       
     ],
   },

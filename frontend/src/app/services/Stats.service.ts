@@ -19,7 +19,7 @@ export interface PlatformStats {
 @Injectable({ providedIn: 'root' })
 export class StatsService {
 
-  private apiUrl = 'http://localhost:8083/subscription/api/stats';
+  private apiUrl = 'http://localhost:8222/api/stats';
 
   constructor(private http: HttpClient) {}
 

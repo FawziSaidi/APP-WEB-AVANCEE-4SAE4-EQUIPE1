@@ -5,6 +5,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { GestionForumComponent } from './GestionForum/gestion-forum.component';
 import { AdminProjectsComponent } from './components/admin-projects/admin-projects.component';
 import { AdminEventsComponent } from './components/admin-evenement/admin-event.component';
+import { AdminCoursComponent } from './cours/admin-cours.component';
 
 const routes: Routes = [
   {
@@ -16,6 +17,7 @@ const routes: Routes = [
       { path: 'forum', component: GestionForumComponent },
       { path: 'projects', component: AdminProjectsComponent },
       {path: 'events', component: AdminEventsComponent},
+       { path: 'cours', component: AdminCoursComponent },
       
       // Module Subscription (lazy loaded)
       {

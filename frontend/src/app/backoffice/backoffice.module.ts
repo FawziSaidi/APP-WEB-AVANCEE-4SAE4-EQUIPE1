@@ -17,6 +17,7 @@ import { AdminEventsComponent } from './components/admin-evenement/admin-event.c
 import { ActivityFormComponent } from './components/activity-form/activity-form-component';
 import { EventFormComponent } from './components/event-form/event-form.component';
 import { ParticipantBadgeComponent } from './components/participant-badge/participant-badge.component';
+import { AdminCoursComponent } from './cours/admin-cours.component'; // ← ADD THIS IMPORT
 
 @NgModule({
   declarations: [
@@ -31,12 +32,13 @@ import { ParticipantBadgeComponent } from './components/participant-badge/partic
     AdminEventsComponent,
     ActivityFormComponent,
     EventFormComponent,
-    ParticipantBadgeComponent
+    ParticipantBadgeComponent,
+    AdminCoursComponent // ← ADD THIS HERE
   ],
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
+    ReactiveFormsModule, // This is already here - good!
     HttpClientModule,
     RouterModule,
     BackofficeRoutingModule

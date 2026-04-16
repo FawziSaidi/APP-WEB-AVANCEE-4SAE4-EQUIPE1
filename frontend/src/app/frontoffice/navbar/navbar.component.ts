@@ -1,5 +1,4 @@
 import { Component, OnInit, ElementRef } from '@angular/core';
-import { ROUTES } from '../sidebar/sidebar.component';
 import { Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.services';
@@ -10,7 +9,7 @@ import { AuthService } from '../../services/auth.services';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
-    private listTitles: any[];
+    private listTitles: any[] = []; // ← Fixed: Added empty array initialization
     location: Location;
     mobile_menu_visible: any = 0;
     private toggleButton: any;
@@ -29,7 +28,9 @@ export class NavbarComponent implements OnInit {
     }
 
     ngOnInit() {
-      this.listTitles = ROUTES.filter(listTitle => listTitle);
+      // Initialize listTitles if needed, or remove this line if not used
+      this.listTitles = []; // You can populate this with your routes
+      
       const navbar: HTMLElement = this.element.nativeElement;
       this.toggleButton = navbar.getElementsByClassName('navbar-toggler')[0];
       this.router.events.subscribe((event) => {
