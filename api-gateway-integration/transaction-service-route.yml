@@ -1,0 +1,26 @@
+# ── Paste into your API Gateway application.yml ───────────────────────────────
+# Works for both Spring Cloud Gateway and Zuul (see both blocks below).
+# Only one block is needed — use the one matching your gateway type.
+
+# ── Spring Cloud Gateway ──────────────────────────────────────────────────────
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: transaction-service
+          uri: http://transaction-service:8084
+          predicates:
+            - Path=/api/transactions/**
+          filters:
+            - name: RewritePath
+              args:
+                regexp: /api/transactions/(?<segment>.*)
+                replacement: /api/transactions/${segment}
+
+# ── Netflix Zuul (alternative) ────────────────────────────────────────────────
+# zuul:
+#   routes:
+#     transaction-service:
+#       path: /api/transactions/**
+#       url: http://transaction-service:8084
+#       strip-prefix: false

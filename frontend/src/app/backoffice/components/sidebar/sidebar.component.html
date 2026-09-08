@@ -1,0 +1,35 @@
+<aside class="sidebar">
+
+  <!-- Logo -->
+  <div class="logo-container">
+    <div class="logo">
+      <img src="assets/img/prolance.png" alt="Prolance Logo" width="40" height="40" />
+      <span class="logo-text">PROLANCE ADMIN</span>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="menu">
+    <a *ngFor="let item of menuItems"
+       [routerLink]="item.link"
+       routerLinkActive="active"
+       class="menu-item">
+      <i class="material-icons menu-icon">{{ item.icon }}</i>
+      <span class="menu-label">{{ item.label }}</span>
+    </a>
+  </nav>
+
+  <!-- Bottom Actions -->
+  <div class="bottom-actions">
+    <a class="menu-item frontoffice-item" (click)="goToFrontoffice()">
+      <i class="material-icons menu-icon">home</i>
+      <span class="menu-label">Retour au Site</span>
+    </a>
+
+    <a class="menu-item logout-item" (click)="logout()">
+      <i class="material-icons menu-icon">logout</i>
+      <span class="menu-label">Déconnexion</span>
+    </a>
+  </div>
+
+</aside>

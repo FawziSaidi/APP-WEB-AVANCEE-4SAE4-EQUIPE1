@@ -1,0 +1,61 @@
+<div class="logo">
+    <a routerLink="/app/dashboard" class="simple-text">
+        <div class="logo-img">
+            <img src="/assets/img/angular2-logo-red.png"/>
+        </div>
+        Prolance
+    </a>
+</div>
+<div class="sidebar-wrapper">
+  <!-- User Info -->
+  <div class="user-info" style="padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px;">
+    <div style="display: flex; align-items: center;">
+      <i class="material-icons" style="font-size: 40px; color: #fff; margin-right: 10px;">account_circle</i>
+      <div>
+        <p style="color: #fff; margin: 0; font-weight: 500;">{{ userName }}</p>
+        <small style="color: rgba(255,255,255,0.6);">{{ userRole }}</small>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isMobileMenu()">
+    <form class="navbar-form">
+      <span class="bmd-form-group">
+        <div class="input-group no-border">
+          <input type="text" value="" class="form-control" placeholder="Search...">
+          <button mat-raised-button type="submit" class="btn btn-white btn-round btn-just-icon">
+            <i class="material-icons">search</i>
+            <div class="ripple-container"></div>
+          </button>
+        </div>
+      </span>
+    </form>
+  </div>
+
+  <!-- Main Menu -->
+  <ul class="nav">
+      <li routerLinkActive="active" *ngFor="let menuItem of menuItems" class="{{menuItem.class}} nav-item">
+          <a class="nav-link" [routerLink]="[menuItem.path]">
+              <i class="material-icons">{{menuItem.icon}}</i>
+              <p>{{menuItem.title}}</p>
+          </a>
+      </li>
+  </ul>
+
+  <!-- Bottom Section: Admin + Logout -->
+  <div style="position: absolute; bottom: 20px; width: 100%; padding: 0 15px;">
+    <!-- Admin Button (only for ADMIN role) -->
+    <div *ngIf="isAdmin()" style="margin-bottom: 10px;">
+      <a class="nav-link" (click)="goToAdmin()" style="cursor: pointer; display: flex; align-items: center; color: #ffc107; padding: 10px 15px; border-radius: 5px; background: rgba(255, 193, 7, 0.1);">
+        <i class="material-icons" style="margin-right: 10px;">admin_panel_settings</i>
+        <p style="margin: 0;">Admin Panel</p>
+      </a>
+    </div>
+
+    <!-- Logout Button -->
+    <a class="nav-link" (click)="logout()" style="cursor: pointer; display: flex; align-items: center; color: #f44336; padding: 10px 15px; border-radius: 5px; background: rgba(244, 67, 54, 0.1);">
+      <i class="material-icons" style="margin-right: 10px;">logout</i>
+      <p style="margin: 0;">Déconnexion</p>
+    </a>
+  </div>
+</div>

@@ -1,0 +1,19 @@
+# ── Paste these blocks into your ads-service application.yml ──────────────────
+
+services:
+  user-service:
+    url: http://user-service:8082
+  forum-service:
+    url: http://forum-service:8083
+  transaction-service:
+    url: http://transaction-service:8084
+
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: guest
+    password: guest
+
+# Enable Feign clients — add @EnableFeignClients to your main class
+# spring.cloud.openfeign.enabled: true
